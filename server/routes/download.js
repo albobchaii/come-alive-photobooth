@@ -81,12 +81,16 @@ function readyPage(s, urls) {
 
   // Simpan Semua: Android/desktop → unduh langsung ke folder Download (tampil di Galeri).
   // iPhone/iPad → lembar Bagikan, karena hanya dari situ foto bisa masuk ke app Foto.
-  const script = `(function(){var F=${JSON.stringify(files).replace(/</g, '\\u003c')};var b=document.getElementById('save'),h=document.getElementById('hint');
+  const script = `(function(){var F=${JSON.stringify(files).replace(/</g, '\\u003c')};var b=document.getElementById('save'),h=document.getElementById('hint'),n=F.length,i=0;
 var ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+function label(){b.textContent='Unduh Gambar '+(i+1)+'/'+n}
+if(!ios)label();
 function done(t){h.textContent=t;b.disabled=false;b.textContent='Unduh Gambar'}
-function direct(){F.forEach(function(f,i){setTimeout(function(){var a=document.createElement('a');a.href=f.dl;a.download=f.name;document.body.appendChild(a);a.click();a.remove()},i*700)});setTimeout(function(){done('Foto tersimpan di folder Download / Galeri.')},F.length*700)}
 function share(){return Promise.all(F.map(function(f){return fetch(f.url).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(x){return new File([x],f.name,{type:'image/jpeg'})})})).then(function(files){if(!(navigator.canShare&&navigator.canShare({files:files})))throw 0;return navigator.share({files:files,title:'Come Alive PhotoBooth'}).then(function(){done('Pilih Simpan Gambar untuk menyimpan ke Foto.')},function(){done('')})})}
-b.addEventListener('click',function(){b.disabled=true;b.textContent='Mengunduh…';if(ios){share().catch(function(){done('Tekan tombol Unduh di bawah tiap foto.')})}else{direct()}})})()`
+// Android/desktop: browser hanya mengizinkan 1 unduhan per sentuhan, jadi tiap tekan = 1 gambar.
+function next(){var a=document.createElement('a');a.href=F[i].dl;a.download=F[i].name;document.body.appendChild(a);a.click();a.remove();i++;
+if(i<n){label();h.innerHTML='&#10003; Gambar '+i+' tersimpan. Tekan lagi untuk gambar berikutnya.'}else{i=0;b.textContent='\\u2713 Semua tersimpan';h.textContent='Semua gambar ada di Galeri (album Download).'}}
+b.addEventListener('click',function(){if(ios){b.disabled=true;b.textContent='Menyiapkan\\u2026';share().catch(function(){done('Tekan tombol Unduh di bawah tiap foto.')})}else{next()}})})()`
   return page({
     title: `Foto ${s.receipt_no}`,
     body: `<h1>Foto Kalian!</h1>
