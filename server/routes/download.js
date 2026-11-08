@@ -140,6 +140,12 @@ export function downloadRouter() {
       if (s.status !== 'ready') return res.set('Cache-Control', 'no-store').send(waitingPage(id))
 
       const urls = await getStorage().downloadUrls(id, SESSION_FILES)
+      // Semua file sudah terhapus (mis. dihapus manual dari dashboard Supabase).
+      if (!Object.keys(urls).length)
+        return res
+          .status(410)
+          .set('Cache-Control', 'no-store')
+          .send(messagePage('Photos no longer available', 'These photos have been removed.'))
       // URL foto berlaku 1 jam; halaman boleh di-cache sebentar di HP.
       res.set('Cache-Control', 'private, max-age=300').send(readyPage(s, urls))
     } catch (err) {
