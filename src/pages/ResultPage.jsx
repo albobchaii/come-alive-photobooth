@@ -33,7 +33,7 @@ export default function ResultPage() {
         setReceiptImage(jpeg)
         canvas.toBlob((blob) => uploadReceipt(blob), 'image/jpeg', 0.85)
       })
-      .catch(() => alive && setError('Could not create the receipt. Please retake the photos.'))
+      .catch(() => alive && setError('Could not create the receipt. Tap Cancel and try again.'))
     return () => {
       alive = false
     }
@@ -51,7 +51,7 @@ export default function ResultPage() {
       .then((canvas) => {
         if (alive) setPrintImage({ url: canvas.toDataURL('image/png'), width: canvas.width, height: canvas.height })
       })
-      .catch(() => alive && setError('Could not create the receipt. Please retake the photos.'))
+      .catch(() => alive && setError('Could not create the receipt. Tap Cancel and try again.'))
     return () => {
       alive = false
     }

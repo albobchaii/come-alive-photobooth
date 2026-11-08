@@ -38,7 +38,7 @@ export default function BoothPage() {
   const taken = shots.filter(Boolean).length
   const done = taken === total
 
-  // Jalankan sesi foto untuk slot-slot tertentu (semua, atau satu untuk ulang).
+  // Jalankan sesi foto untuk slot-slot tertentu (semua, atau yang belum terisi).
   const runSequence = useCallback(
     async (indices) => {
       setShooting(true)
@@ -71,10 +71,6 @@ export default function BoothPage() {
   }
 
   const continueMissing = () => runSequence(shots.flatMap((p, i) => (p ? [] : [i])))
-
-  const retakeOne = (i) => {
-    if (!shooting && status === 'ready') runSequence([i])
-  }
 
   if (!template) return <Navigate to="/template" replace />
 
@@ -116,7 +112,7 @@ export default function BoothPage() {
 
             {shooting && (
               <div className="cam__badge">
-                {template.item} #{activeIndex + 1} dari {total}
+                {template.item} #{activeIndex + 1} of {total}
               </div>
             )}
 
@@ -126,30 +122,17 @@ export default function BoothPage() {
           {/* Thumbnail 3 foto di bawah kamera */}
           <div className="thumbs" aria-label="Photos taken">
             {shots.map((p, i) => (
-              <button
+              <div
                 key={i}
-                type="button"
                 className={`thumb${p ? ' has-photo' : ''}${i === activeIndex ? ' is-active' : ''}`}
-                onClick={() => p && retakeOne(i)}
-                disabled={!p || shooting}
-                aria-label={p ? `Retake ${template.item} #${i + 1}` : `${template.item} #${i + 1} not taken yet`}
+                aria-label={p ? `${template.item} #${i + 1}` : `${template.item} #${i + 1} not taken yet`}
               >
                 {p ? <img src={p} alt="" /> : <span>{i + 1}</span>}
-                {p && !shooting && (
-                  <span className="thumb__retake" aria-hidden="true">
-                    ↻ Retake
-                  </span>
-                )}
-              </button>
+              </div>
             ))}
           </div>
 
           <div className="booth__actions">
-            {taken > 0 && !shooting && (
-              <button type="button" className="back back--lg" onClick={startAll} disabled={!canShoot}>
-                ↻ Retake All
-              </button>
-            )}
             {!done && (
               <button
                 type="button"
@@ -173,7 +156,7 @@ export default function BoothPage() {
 
           <p className="booth__hint">
             {done && !shooting
-              ? 'Not happy with a photo? Tap ↻ Retake on it.'
+              ? 'All photos taken! Tap Next to continue.'
               : `${total} photos, ${COUNTDOWN}-second countdown before each one.`}
           </p>
         </section>

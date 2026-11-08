@@ -924,7 +924,6 @@ button.back {
 
 .thumb.has-photo {
   border-style: solid;
-  cursor: pointer;
 }
 
 .thumb.is-active {
@@ -937,40 +936,6 @@ button.back {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.thumb:disabled {
-  opacity: 1;
-}
-
-.thumb {
-  position: relative;
-}
-
-/* Label "↻ Ulangi" yang selalu terlihat di foto yang sudah diambil */
-.thumb__retake {
-  position: absolute;
-  left: 50%;
-  bottom: 6px;
-  transform: translateX(-50%);
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: var(--ink);
-  color: var(--paper);
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 0.72rem;
-  white-space: nowrap;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
-  transition: transform 0.15s;
-}
-
-.thumb.has-photo:hover .thumb__retake {
-  transform: translateX(-50%) scale(1.08);
-}
-
-.thumb.has-photo:hover img {
-  filter: brightness(0.85);
 }
 
 @keyframes pulse {
@@ -1022,19 +987,6 @@ button.back {
 
 .rc__slot.has-photo {
   place-items: stretch;
-}
-
-button.rc__slot {
-  display: grid;
-  width: 100%;
-  padding: 0;
-  font: inherit;
-  cursor: pointer;
-}
-
-button.rc__slot:hover {
-  outline: 0.8cqw dashed var(--ink-print);
-  outline-offset: 1cqw;
 }
 
 .rc__slot.is-active {

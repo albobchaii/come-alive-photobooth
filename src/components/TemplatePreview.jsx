@@ -114,23 +114,10 @@ function Header({ style }) {
 /*
  * photos      : (opsional) array data URL foto untuk mengisi slot
  * activeIndex : (opsional) slot yang sedang difoto, diberi sorotan
- * onSlotClick : (opsional) klik slot, mis. untuk mengulang satu foto
  */
-function SlotBox({ photo, active, onClick, label }) {
+function SlotBox({ photo, active }) {
   const className = `rc__slot${photo ? ' has-photo' : ''}${active ? ' is-active' : ''}`
   const content = photo ? <img src={photo} alt="" /> : <Person />
-  if (onClick && photo)
-    return (
-      <button
-        type="button"
-        className={className}
-        style={{ aspectRatio: PRINT.photoAspect }}
-        onClick={onClick}
-        aria-label={`Retake ${label}`}
-      >
-        {content}
-      </button>
-    )
   return (
     <div className={className} style={{ aspectRatio: PRINT.photoAspect }}>
       {content}
@@ -138,7 +125,7 @@ function SlotBox({ photo, active, onClick, label }) {
   )
 }
 
-export default function TemplatePreview({ template: t, photos, activeIndex = -1, onSlotClick }) {
+export default function TemplatePreview({ template: t, photos, activeIndex = -1 }) {
   const r = SAMPLE_RECEIPT
   return (
     <div className="tpl">
@@ -154,12 +141,7 @@ export default function TemplatePreview({ template: t, photos, activeIndex = -1,
 
         {Array.from({ length: PRINT.photosPerStrip }, (_, i) => (
           <div key={i} className="rc__item">
-            <SlotBox
-              photo={photos?.[i]}
-              active={i === activeIndex}
-              onClick={onSlotClick ? () => onSlotClick(i) : undefined}
-              label={`${t.item} #${i + 1}`}
-            />
+            <SlotBox photo={photos?.[i]} active={i === activeIndex} />
             <div className="rc__line rc__line--leader">
               <span>
                 {t.item} #{i + 1}
