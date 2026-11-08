@@ -33,7 +33,7 @@ export default function ResultPage() {
         setReceiptImage(jpeg)
         canvas.toBlob((blob) => uploadReceipt(blob), 'image/jpeg', 0.85)
       })
-      .catch(() => alive && setError('Struk gagal dibuat. Coba ulangi foto.'))
+      .catch(() => alive && setError('Could not create the receipt. Please retake the photos.'))
     return () => {
       alive = false
     }
@@ -51,7 +51,7 @@ export default function ResultPage() {
       .then((canvas) => {
         if (alive) setPrintImage({ url: canvas.toDataURL('image/png'), width: canvas.width, height: canvas.height })
       })
-      .catch(() => alive && setError('Struk gagal dibuat. Coba ulangi foto.'))
+      .catch(() => alive && setError('Could not create the receipt. Please retake the photos.'))
     return () => {
       alive = false
     }
@@ -93,7 +93,7 @@ export default function ResultPage() {
 
         <div className="result">
           <section className="result__panel">
-            <h1 className="result__title">{printed ? 'Ambil struknya!' : 'Struk Kamu Siap!'}</h1>
+            <h1 className="result__title">{printed ? 'Grab your receipt!' : 'Your Receipt Is Ready!'}</h1>
             <p className="result__meta">
               <span>{meta.no}</span>
               <span aria-hidden="true">·</span>
@@ -101,24 +101,24 @@ export default function ResultPage() {
             </p>
             <p className="result__note">
               {printed
-                ? 'Struk sedang dicetak. Ambil di printer ya 🎄'
-                : 'Siap dicetak di kertas thermal 58 mm.'}
+                ? 'Printing now. Pick it up from the printer 🎄'
+                : 'Ready to print on 58 mm thermal paper.'}
             </p>
 
             <div className="result__actions">
               <button type="button" className="cta" onClick={printAndShowQr} disabled={!printImage}>
-                {printed ? 'Cetak Lagi' : 'Cetak Struk'}
+                {printed ? 'Print Again' : 'Print Receipt'}
               </button>
             </div>
           </section>
 
-          <section className="result__receipt" aria-label="Pratinjau struk">
+          <section className="result__receipt" aria-label="Receipt preview">
             <div className="tpl tpl--result">
               <div className="tpl__paper">
                 {image ? (
-                  <img src={image.url} alt={`Struk foto ${meta.no}`} className="result__img" />
+                  <img src={image.url} alt={`Photo receipt ${meta.no}`} className="result__img" />
                 ) : (
-                  <div className="result__loading">{error || 'Menyiapkan struk…'}</div>
+                  <div className="result__loading">{error || 'Preparing receipt…'}</div>
                 )}
               </div>
             </div>

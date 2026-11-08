@@ -29,11 +29,11 @@ export default function TemplatePage() {
       </header>
 
       <div className="page__intro">
-        <h1 className="page__title">Pilih Template</h1>
-        <p className="page__sub">Pilih bingkai favorit untuk strip foto kalian</p>
+        <h1 className="page__title">Choose a Template</h1>
+        <p className="page__sub">Pick your favorite frame for your photo strip</p>
       </div>
 
-      <div className="tpl-grid" role="radiogroup" aria-label="Template strip foto">
+      <div className="tpl-grid" role="radiogroup" aria-label="Photo strip templates">
         {TEMPLATES.map((t, i) => {
           const isSel = t.id === selectedId
           return (
@@ -61,13 +61,13 @@ export default function TemplatePage() {
 
       <div className="actionbar">
         <p className="actionbar__info" aria-live="polite">
-          <span>Template dipilih</span>
+          <span>Selected template</span>
           <strong>
             {selected.name}
           </strong>
         </p>
         <button type="button" className="cta cta--sm" onClick={next}>
-          Lanjut
+          Next
         </button>
       </div>
     </main>

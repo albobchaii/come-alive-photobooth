@@ -13,7 +13,7 @@ export default function CancelButton() {
         clearSession()
       }}
     >
-      <span aria-hidden="true">✕</span> Batal
+      <span aria-hidden="true">✕</span> Cancel
     </Link>
   )
 }

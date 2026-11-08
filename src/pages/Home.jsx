@@ -63,7 +63,7 @@ export default function Home() {
                 clearSession()
                 navigate('/template')
               }}>
-              Mulai Foto
+              Start
             </button>
           </div>
         </section>

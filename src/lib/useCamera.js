@@ -30,8 +30,8 @@ export default function useCamera() {
       setStatus('error')
       setError(
         window.isSecureContext
-          ? 'Browser ini tidak mendukung kamera. Coba pakai Chrome atau Safari terbaru.'
-          : 'Kamera hanya bisa dipakai lewat HTTPS atau localhost.',
+          ? 'This browser does not support the camera. Try the latest Chrome or Safari.'
+          : 'The camera only works over HTTPS or localhost.',
       )
       return
     }
@@ -61,12 +61,12 @@ export default function useCamera() {
       if (id !== attempt.current) return
       setStatus('error')
       if (err?.name === 'NotAllowedError' || err?.name === 'SecurityError')
-        setError('Izin kamera ditolak. Izinkan akses kamera di pengaturan browser, lalu coba lagi.')
+        setError('Camera permission was denied. Allow camera access in your browser settings, then try again.')
       else if (err?.name === 'NotFoundError' || err?.name === 'OverconstrainedError')
-        setError('Kamera tidak ditemukan. Pastikan kamera terpasang.')
+        setError('No camera found. Make sure a camera is connected.')
       else if (err?.name === 'NotReadableError')
-        setError('Kamera sedang dipakai aplikasi lain. Tutup aplikasi itu, lalu coba lagi.')
-      else setError('Kamera tidak bisa dinyalakan. Coba lagi.')
+        setError('The camera is being used by another app. Close that app, then try again.')
+      else setError('Could not start the camera. Please try again.')
     }
   }, [stop])
 

@@ -40,7 +40,7 @@ footer{margin-top:32px;font-size:.75rem;opacity:.7}
 
 function page({ title, body, script = '' }) {
   return `<!doctype html>
-<html lang="id"><head>
+<html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
@@ -62,8 +62,8 @@ function waitingPage(id) {
   // Cek status tiap 1,5 detik, muat ulang begitu foto siap.
   const script = `(function(){var n=0;function t(){fetch('/api/sessions/${id}/status',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.status!=='uploading'){location.reload()}else if(++n<400){setTimeout(t,1500)}}).catch(function(){setTimeout(t,3000)})}setTimeout(t,1500)})()`
   return page({
-    title: 'Sedang disiapkan',
-    body: `<div class="box"><div class="spin" aria-hidden="true"></div><h1>Foto sedang disiapkan…</h1><p class="hint">Halaman ini akan terbuka otomatis. Jangan ditutup ya.</p></div>`,
+    title: 'Getting ready',
+    body: `<div class="box"><div class="spin" aria-hidden="true"></div><h1>Your photos are almost ready…</h1><p class="hint">This page will open automatically. Please keep it open.</p></div>`,
     script,
   })
 }
@@ -73,7 +73,10 @@ const downloadUrl = (url, name) => `${url}${url.includes('?') ? '&' : '?'}downlo
 
 function readyPage(s, urls) {
   const no = esc(s.receipt_no)
-  const file = (n) => ({ url: urls[n], dl: downloadUrl(urls[n], `ComeAlive-${s.receipt_no}-${n}`), name: `ComeAlive-${s.receipt_no}-${n}` })
+  const file = (n) => {
+    const name = `ComeAlive-${s.receipt_no}-${n.replace('foto-', 'photo-').replace('struk', 'receipt')}`
+    return { url: urls[n], dl: downloadUrl(urls[n], name), name }
+  }
   const files = SESSION_FILES.filter((n) => urls[n]).map(file)
   const photos = SESSION_FILES.filter((n) => n.startsWith('foto-') && urls[n]).map(file)
   const receipt = urls['struk.jpg'] ? file('struk.jpg') : null
@@ -83,23 +86,23 @@ function readyPage(s, urls) {
   // iPhone/iPad → lembar Bagikan, karena hanya dari situ foto bisa masuk ke app Foto.
   const script = `(function(){var F=${JSON.stringify(files).replace(/</g, '\\u003c')};var b=document.getElementById('save'),h=document.getElementById('hint'),n=F.length,i=0;
 var ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-function label(){b.textContent='Unduh Gambar '+(i+1)+'/'+n}
+function label(){b.textContent='Download Image '+(i+1)+'/'+n}
 if(!ios)label();
-function done(t){h.textContent=t;b.disabled=false;b.textContent='Unduh Gambar'}
-function share(){return Promise.all(F.map(function(f){return fetch(f.url).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(x){return new File([x],f.name,{type:'image/jpeg'})})})).then(function(files){if(!(navigator.canShare&&navigator.canShare({files:files})))throw 0;return navigator.share({files:files,title:'Come Alive PhotoBooth'}).then(function(){done('Pilih Simpan Gambar untuk menyimpan ke Foto.')},function(){done('')})})}
+function done(t){h.textContent=t;b.disabled=false;b.textContent='Download Images'}
+function share(){return Promise.all(F.map(function(f){return fetch(f.url).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(x){return new File([x],f.name,{type:'image/jpeg'})})})).then(function(files){if(!(navigator.canShare&&navigator.canShare({files:files})))throw 0;return navigator.share({files:files,title:'Come Alive PhotoBooth'}).then(function(){done('Choose Save Image to save them to Photos.')},function(){done('')})})}
 // Android/desktop: browser hanya mengizinkan 1 unduhan per sentuhan, jadi tiap tekan = 1 gambar.
 function next(){var a=document.createElement('a');a.href=F[i].dl;a.download=F[i].name;document.body.appendChild(a);a.click();a.remove();i++;
-if(i<n){label();h.innerHTML='&#10003; Gambar '+i+' tersimpan. Tekan lagi untuk gambar berikutnya.'}else{i=0;b.textContent='\\u2713 Semua tersimpan';h.textContent='Semua gambar ada di Galeri (album Download).'}}
-b.addEventListener('click',function(){if(ios){b.disabled=true;b.textContent='Menyiapkan\\u2026';share().catch(function(){done('Tekan tombol Unduh di bawah tiap foto.')})}else{next()}})})()`
+if(i<n){label();h.innerHTML='&#10003; Image '+i+' saved. Tap again for the next one.'}else{i=0;b.textContent='\\u2713 All saved';h.textContent='All images are in your Gallery (Download album).'}}
+b.addEventListener('click',function(){if(ios){b.disabled=true;b.textContent='Preparing\\u2026';share().catch(function(){done('Tap Download below each photo.')})}else{next()}})})()`
   return page({
-    title: `Foto ${s.receipt_no}`,
-    body: `<h1>Foto Kalian!</h1>
+    title: `Photos ${s.receipt_no}`,
+    body: `<h1>Your Photos!</h1>
 <p class="meta">${no}</p>
-<button id="save" class="btn" type="button">Unduh Gambar</button>
-<p id="hint" class="hint">Atau tekan <b>Unduh</b> di bawah tiap foto.</p>
-${receipt ? `<figure><img class="receipt" src="${esc(receipt.url)}" alt="Struk ${no}">${dlLink(receipt, 'Unduh struk')}</figure>` : ''}
-<h2>Foto asli</h2>
-<div class="photos">${photos.map((f, i) => `<figure><img src="${esc(f.url)}" alt="Foto ${i + 1}" loading="${i ? 'lazy' : 'eager'}" width="960" height="720">${dlLink(f, `Unduh foto ${i + 1}`)}</figure>`).join('')}</div>`,
+<button id="save" class="btn" type="button">Download Images</button>
+<p id="hint" class="hint">Or tap <b>Download</b> below each photo.</p>
+${receipt ? `<figure><img class="receipt" src="${esc(receipt.url)}" alt="Receipt ${no}">${dlLink(receipt, 'Download receipt')}</figure>` : ''}
+<h2>Original photos</h2>
+<div class="photos">${photos.map((f, i) => `<figure><img src="${esc(f.url)}" alt="Photo ${i + 1}" loading="${i ? 'lazy' : 'eager'}" width="960" height="720">${dlLink(f, `Download photo ${i + 1}`)}</figure>`).join('')}</div>`,
     script,
   })
 }
@@ -119,7 +122,7 @@ export function downloadRouter() {
         res
           .status(404)
           .set('Cache-Control', 'no-store')
-          .send(messagePage('Foto tidak ditemukan', 'Coba scan ulang QR code dari layar photobooth.'))
+          .send(messagePage('Photos not found', 'Try scanning the QR code on the photobooth screen again.'))
 
       if (!ID_RE.test(id)) return notFound()
       const db = await getDb()
@@ -133,7 +136,7 @@ export function downloadRouter() {
         return res
           .status(410)
           .set('Cache-Control', 'no-store')
-          .send(messagePage('Link sudah kedaluwarsa', 'Masa simpan foto ini sudah habis.'))
+          .send(messagePage('This link has expired', 'These photos are no longer available.'))
       if (s.status !== 'ready') return res.set('Cache-Control', 'no-store').send(waitingPage(id))
 
       const urls = await getStorage().downloadUrls(id, SESSION_FILES)

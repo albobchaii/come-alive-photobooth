@@ -12,16 +12,16 @@ import {
 } from '../lib/session.js'
 import CancelButton from '../components/CancelButton.jsx'
 
-const STEPS = ['Buka kamera HP', 'Arahkan ke QR code', 'Simpan foto kalian']
+const STEPS = ['Open your phone camera', 'Point it at the QR code', 'Save your photos']
 
 // Link contoh untuk mode demo (tablet belum di-setup di /setup).
 const DEMO_URL = 'https://comealive.example/foto'
 
 function statusText(s, enabled) {
-  if (!enabled) return 'Mode demo · tablet belum di-setup'
-  if (s.status === 'ready') return '✓ Foto siap di-scan'
-  if (s.status === 'error') return '⚠ Upload gagal · hubungi panitia'
-  return `Mengunggah foto… ${s.uploaded}/${s.total}`
+  if (!enabled) return 'Demo mode · tablet not set up'
+  if (s.status === 'ready') return '✓ Photos ready to scan'
+  if (s.status === 'error') return '⚠ Upload failed · please ask the crew'
+  return `Uploading photos… ${s.uploaded}/${s.total}`
 }
 
 export default function SoftfilePage() {
@@ -48,7 +48,7 @@ export default function SoftfilePage() {
       color: { dark: '#111111', light: '#ffffff' },
     })
       .then((img) => alive && setQr(img))
-      .catch(() => alive && setError('QR gagal dibuat. Coba lagi.'))
+      .catch(() => alive && setError('Could not create the QR code. Please try again.'))
     return () => {
       alive = false
     }
@@ -78,20 +78,20 @@ export default function SoftfilePage() {
       </header>
 
       <section className="softfile">
-        <h1 className="softfile__title">Scan Softfile-nya!</h1>
-        <p className="softfile__sub">Struk sedang dicetak. Sambil menunggu, simpan foto digitalnya di HP kalian.</p>
+        <h1 className="softfile__title">Scan for Your Photos!</h1>
+        <p className="softfile__sub">Your receipt is printing. While you wait, save the digital photos to your phone.</p>
 
         <div className="tpl tpl--qr">
           <div className="tpl__paper softfile__card">
             <div className="softfile__head">SOFTFILE · {meta.no}</div>
             <div className="softfile__qr">
               {qr ? (
-                <img src={qr} alt={`QR code unduhan foto ${meta.no}`} />
+                <img src={qr} alt={`QR code to download photos ${meta.no}`} />
               ) : (
-                <span className="softfile__loading">{error || 'Menyiapkan QR…'}</span>
+                <span className="softfile__loading">{error || 'Preparing QR…'}</span>
               )}
             </div>
-            <div className="softfile__foot">Scan untuk unduh foto</div>
+            <div className="softfile__foot">Scan to download photos</div>
           </div>
         </div>
 
@@ -109,7 +109,7 @@ export default function SoftfilePage() {
         </ol>
 
         <button type="button" className="cta" onClick={finish}>
-          Selesai
+          Done
         </button>
       </section>
     </main>

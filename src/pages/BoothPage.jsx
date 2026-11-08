@@ -95,7 +95,7 @@ export default function BoothPage() {
 
             {status === 'loading' && (
               <div className="cam__overlay">
-                <p className="cam__msg">Menyalakan kamera…</p>
+                <p className="cam__msg">Starting camera…</p>
               </div>
             )}
 
@@ -103,7 +103,7 @@ export default function BoothPage() {
               <div className="cam__overlay cam__overlay--solid">
                 <p className="cam__msg">{error}</p>
                 <button type="button" className="back" onClick={retry}>
-                  Coba lagi
+                  Try again
                 </button>
               </div>
             )}
@@ -124,7 +124,7 @@ export default function BoothPage() {
           </div>
 
           {/* Thumbnail 3 foto di bawah kamera */}
-          <div className="thumbs" aria-label="Foto yang sudah diambil">
+          <div className="thumbs" aria-label="Photos taken">
             {shots.map((p, i) => (
               <button
                 key={i}
@@ -132,12 +132,12 @@ export default function BoothPage() {
                 className={`thumb${p ? ' has-photo' : ''}${i === activeIndex ? ' is-active' : ''}`}
                 onClick={() => p && retakeOne(i)}
                 disabled={!p || shooting}
-                aria-label={p ? `Ulangi ${template.item} #${i + 1}` : `${template.item} #${i + 1} belum diambil`}
+                aria-label={p ? `Retake ${template.item} #${i + 1}` : `${template.item} #${i + 1} not taken yet`}
               >
                 {p ? <img src={p} alt="" /> : <span>{i + 1}</span>}
                 {p && !shooting && (
                   <span className="thumb__retake" aria-hidden="true">
-                    ↻ Ulangi
+                    ↻ Retake
                   </span>
                 )}
               </button>
@@ -147,7 +147,7 @@ export default function BoothPage() {
           <div className="booth__actions">
             {taken > 0 && !shooting && (
               <button type="button" className="back back--lg" onClick={startAll} disabled={!canShoot}>
-                ↻ Ulangi Semua
+                ↻ Retake All
               </button>
             )}
             {!done && (
@@ -157,7 +157,7 @@ export default function BoothPage() {
                 onClick={taken === 0 ? startAll : continueMissing}
                 disabled={!canShoot}
               >
-                {shooting ? 'Senyum!' : taken === 0 ? 'Mulai Foto' : 'Lanjut Foto'}
+                {shooting ? 'Smile!' : taken === 0 ? 'Start' : 'Continue'}
               </button>
             )}
             {done && !shooting && (
@@ -166,15 +166,15 @@ export default function BoothPage() {
                 className="cta"
                 onClick={() => navigate('/hasil', { state: { templateId } })}
               >
-                Lanjut
+                Next
               </button>
             )}
           </div>
 
           <p className="booth__hint">
             {done && !shooting
-              ? 'Kurang suka satu foto? Tekan ↻ Ulangi pada foto itu.'
-              : `${total} foto otomatis, hitung mundur ${COUNTDOWN} detik tiap foto.`}
+              ? 'Not happy with a photo? Tap ↻ Retake on it.'
+              : `${total} photos, ${COUNTDOWN}-second countdown before each one.`}
           </p>
         </section>
 

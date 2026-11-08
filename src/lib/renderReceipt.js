@@ -256,8 +256,8 @@ export async function renderReceipt({ template: t, photos, meta, print = null })
   center(EVENT.subtitle, { size: FS, gap: 0.1 })
 
   rule()
-  line(`No: ${meta.no}`, meta.date)
-  line(`Kasir: ${CASHIER}`, meta.time)
+  line(`No: ${meta.no}`, `${meta.date} ${meta.time}`)
+  line(`Cashier: ${CASHIER}`, '')
   rule()
 
   /* ---------- Foto ---------- */

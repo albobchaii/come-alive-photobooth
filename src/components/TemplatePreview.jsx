@@ -126,7 +126,7 @@ function SlotBox({ photo, active, onClick, label }) {
         className={className}
         style={{ aspectRatio: PRINT.photoAspect }}
         onClick={onClick}
-        aria-label={`Ulangi ${label}`}
+        aria-label={`Retake ${label}`}
       >
         {content}
       </button>
@@ -148,8 +148,8 @@ export default function TemplatePreview({ template: t, photos, activeIndex = -1,
         <div className="rc__center">{EVENT.subtitle}</div>
 
         <Rule />
-        <Line left={`No: ${r.no}`} right={r.date} />
-        <Line left={`Kasir: ${CASHIER}`} right={r.time} />
+        <Line left={`No: ${r.no}`} right={`${r.date} ${r.time}`} />
+        <Line left={`Cashier: ${CASHIER}`} right="" />
         <Rule />
 
         {Array.from({ length: PRINT.photosPerStrip }, (_, i) => (
