@@ -83,15 +83,15 @@ function readyPage(s, urls) {
   // iPhone/iPad → lembar Bagikan, karena hanya dari situ foto bisa masuk ke app Foto.
   const script = `(function(){var F=${JSON.stringify(files).replace(/</g, '\\u003c')};var b=document.getElementById('save'),h=document.getElementById('hint');
 var ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
-function done(t){h.textContent=t;b.disabled=false;b.textContent='Simpan Semua Foto'}
+function done(t){h.textContent=t;b.disabled=false;b.textContent='Unduh Gambar'}
 function direct(){F.forEach(function(f,i){setTimeout(function(){var a=document.createElement('a');a.href=f.dl;a.download=f.name;document.body.appendChild(a);a.click();a.remove()},i*700)});setTimeout(function(){done('Foto tersimpan di folder Download / Galeri.')},F.length*700)}
 function share(){return Promise.all(F.map(function(f){return fetch(f.url).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(x){return new File([x],f.name,{type:'image/jpeg'})})})).then(function(files){if(!(navigator.canShare&&navigator.canShare({files:files})))throw 0;return navigator.share({files:files,title:'Come Alive PhotoBooth'}).then(function(){done('Pilih Simpan Gambar untuk menyimpan ke Foto.')},function(){done('')})})}
-b.addEventListener('click',function(){b.disabled=true;b.textContent='Menyimpan…';if(ios){share().catch(function(){done('Tekan tombol Unduh di bawah tiap foto.')})}else{direct()}})})()`
+b.addEventListener('click',function(){b.disabled=true;b.textContent='Mengunduh…';if(ios){share().catch(function(){done('Tekan tombol Unduh di bawah tiap foto.')})}else{direct()}})})()`
   return page({
     title: `Foto ${s.receipt_no}`,
     body: `<h1>Foto Kalian!</h1>
 <p class="meta">${no}</p>
-<button id="save" class="btn" type="button">Simpan Semua Foto</button>
+<button id="save" class="btn" type="button">Unduh Gambar</button>
 <p id="hint" class="hint">Atau tekan <b>Unduh</b> di bawah tiap foto.</p>
 ${receipt ? `<figure><img class="receipt" src="${esc(receipt.url)}" alt="Struk ${no}">${dlLink(receipt, 'Unduh struk')}</figure>` : ''}
 <h2>Foto asli</h2>
