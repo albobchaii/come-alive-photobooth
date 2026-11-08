@@ -24,10 +24,14 @@ h1{font-size:2rem;line-height:1.1;margin:10px 0 4px;transform:rotate(-2deg)}
 .btn{display:inline-block;width:100%;max-width:340px;padding:14px 20px;border:0;border-radius:999px;background:var(--ink);color:var(--paper);font:800 1.1rem system-ui,sans-serif;box-shadow:3px 4px 0 rgba(0,0,0,.18);cursor:pointer}
 .btn:disabled{opacity:.6}
 .hint{font-size:.85rem;margin:10px 0 22px;opacity:.85}
-.receipt{display:block;width:100%;max-width:300px;margin:0 auto 22px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.receipt{display:block;width:100%;max-width:300px;margin:0 auto;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.12)}
 .photos{display:grid;gap:12px}
 .photos img{width:100%;height:auto;display:block;border:2.5px solid var(--ink);border-radius:12px;background:#fff}
 h2{font-size:1rem;margin:28px 0 12px}
+figure{margin:0 0 22px}
+.photos figure{margin:0}
+.dl{display:inline-block;margin-top:8px;padding:9px 18px;border:2px solid var(--ink);border-radius:999px;color:var(--ink);font-weight:800;font-size:.95rem;text-decoration:none;background:#fff}
+.dl:active{background:var(--ink);color:var(--paper)}
 .box{margin-top:40px}
 .spin{width:44px;height:44px;margin:0 auto 16px;border:5px solid rgba(200,16,46,.2);border-top-color:var(--ink);border-radius:50%;animation:s 1s linear infinite}
 @keyframes s{to{transform:rotate(360deg)}}
@@ -64,27 +68,34 @@ function waitingPage(id) {
   })
 }
 
+// URL yang memaksa unduhan (Content-Disposition: attachment) dengan nama file rapi.
+const downloadUrl = (url, name) => `${url}${url.includes('?') ? '&' : '?'}download=${encodeURIComponent(name)}`
+
 function readyPage(s, urls) {
   const no = esc(s.receipt_no)
-  const files = SESSION_FILES.filter((n) => urls[n]).map((n) => ({
-    url: urls[n],
-    name: `ComeAlive-${s.receipt_no}-${n}`,
-  }))
-  const photos = SESSION_FILES.filter((n) => n.startsWith('foto-') && urls[n])
-  // Simpan: Web Share (langsung ke galeri di HP), cadangannya unduh satu per satu.
+  const file = (n) => ({ url: urls[n], dl: downloadUrl(urls[n], `ComeAlive-${s.receipt_no}-${n}`), name: `ComeAlive-${s.receipt_no}-${n}` })
+  const files = SESSION_FILES.filter((n) => urls[n]).map(file)
+  const photos = SESSION_FILES.filter((n) => n.startsWith('foto-') && urls[n]).map(file)
+  const receipt = urls['struk.jpg'] ? file('struk.jpg') : null
+  const dlLink = (f, label) => `<a class="dl" href="${esc(f.dl)}" download="${esc(f.name)}">⬇ ${label}</a>`
+
+  // Simpan Semua: Android/desktop → unduh langsung ke folder Download (tampil di Galeri).
+  // iPhone/iPad → lembar Bagikan, karena hanya dari situ foto bisa masuk ke app Foto.
   const script = `(function(){var F=${JSON.stringify(files).replace(/</g, '\\u003c')};var b=document.getElementById('save'),h=document.getElementById('hint');
-function blobs(){return Promise.all(F.map(function(f){return fetch(f.url).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(x){return new File([x],f.name,{type:x.type||'image/jpeg'})})}))}
-function dl(files){files.forEach(function(f,i){setTimeout(function(){var a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},4000)},i*400)})}
-b.addEventListener('click',function(){b.disabled=true;b.textContent='Menyiapkan…';blobs().then(function(files){if(navigator.canShare&&navigator.canShare({files:files})){return navigator.share({files:files,title:'Come Alive PhotoBooth'}).catch(function(e){if(e&&e.name!=='AbortError')dl(files)})}dl(files);h.textContent='Foto tersimpan di folder Download.'}).catch(function(){h.textContent='Gagal menyiapkan. Tekan lama pada foto lalu pilih Simpan gambar.'}).finally(function(){b.disabled=false;b.textContent='Simpan Semua Foto'})})})()`
+var ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+function done(t){h.textContent=t;b.disabled=false;b.textContent='Simpan Semua Foto'}
+function direct(){F.forEach(function(f,i){setTimeout(function(){var a=document.createElement('a');a.href=f.dl;a.download=f.name;document.body.appendChild(a);a.click();a.remove()},i*700)});setTimeout(function(){done('Foto tersimpan di folder Download / Galeri.')},F.length*700)}
+function share(){return Promise.all(F.map(function(f){return fetch(f.url).then(function(r){if(!r.ok)throw 0;return r.blob()}).then(function(x){return new File([x],f.name,{type:'image/jpeg'})})})).then(function(files){if(!(navigator.canShare&&navigator.canShare({files:files})))throw 0;return navigator.share({files:files,title:'Come Alive PhotoBooth'}).then(function(){done('Pilih Simpan Gambar untuk menyimpan ke Foto.')},function(){done('')})})}
+b.addEventListener('click',function(){b.disabled=true;b.textContent='Menyimpan…';if(ios){share().catch(function(){done('Tekan tombol Unduh di bawah tiap foto.')})}else{direct()}})})()`
   return page({
     title: `Foto ${s.receipt_no}`,
     body: `<h1>Foto Kalian!</h1>
 <p class="meta">${no}</p>
 <button id="save" class="btn" type="button">Simpan Semua Foto</button>
-<p id="hint" class="hint">Atau tekan lama pada foto, lalu pilih <b>Simpan gambar</b>.</p>
-${urls['struk.jpg'] ? `<img class="receipt" src="${esc(urls['struk.jpg'])}" alt="Struk ${no}">` : ''}
+<p id="hint" class="hint">Atau tekan <b>Unduh</b> di bawah tiap foto.</p>
+${receipt ? `<figure><img class="receipt" src="${esc(receipt.url)}" alt="Struk ${no}">${dlLink(receipt, 'Unduh struk')}</figure>` : ''}
 <h2>Foto asli</h2>
-<div class="photos">${photos.map((n, i) => `<img src="${esc(urls[n])}" alt="Foto ${i + 1}" loading="${i ? 'lazy' : 'eager'}" width="960" height="720">`).join('')}</div>`,
+<div class="photos">${photos.map((f, i) => `<figure><img src="${esc(f.url)}" alt="Foto ${i + 1}" loading="${i ? 'lazy' : 'eager'}" width="960" height="720">${dlLink(f, `Unduh foto ${i + 1}`)}</figure>`).join('')}</div>`,
     script,
   })
 }

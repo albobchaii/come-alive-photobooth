@@ -31,6 +31,7 @@ export function devStorageRouter() {
 
   r.get('/dev-storage/file/:id/:name', (req, res) => {
     if (!valid('file', req)) return res.status(403).end()
+    if (typeof req.query.download === 'string') res.attachment(req.query.download)
     res.sendFile(localFilePath(req.params.id, req.params.name), { maxAge: '1h', dotfiles: 'allow' }, (err) => {
       if (err && !res.headersSent) res.status(404).end()
     })
