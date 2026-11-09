@@ -15,7 +15,7 @@ export const PRINT = {
 /*
  * Template.
  * - layout   : receipt (struk belanja, bawaan) | polaroid | postcard | calendar | ticket | news
- *              | carol (lembar lagu) | arcade | certificate | wanted
+ *              | playlist | arcade | chat | forecast
  *
  * Khusus layout receipt:
  * - header   : gaya kop (plain | xmas | hand | stars)
@@ -107,20 +107,18 @@ export const TEMPLATES = [
     footer: ['"Good news of great joy"', 'LUKE 2:10'],
   },
   {
-    // Lembar lagu: paranada + not "Joy to the World" (melodi asli) di atas tiap foto.
-    id: 'lagu-natal',
+    // Playlist Natal: kaset + daftar lagu, tiap foto jadi satu lagu.
+    id: 'playlist-natal',
     name: 'G',
-    layout: 'carol',
-    title: 'Joy to the World',
-    subtitle: 'CAROL No. 26 · COME ALIVE',
-    lyrics: ['Joy to the world! the Lord is come', 'Let earth receive her King', "And heav'n and nature sing"],
-    // posisi not pada paranada: 0 = garis teratas (F5) … 8 = garis terbawah (E4), 10 = C4
-    notes: [
-      [3, 4, 5, 6, 7, 8, 9, 10],
-      [6, 5, 5, 4, 4, 3],
-      [3, 3, 4, 5, 6, 6, 7, 8],
+    layout: 'playlist',
+    mix: 'Come Alive Mix',
+    title: 'CHRISTMAS PLAYLIST',
+    tracks: [
+      ['Joy to the World', '3:16'],
+      ['O Holy Night', '2:10'],
+      ['Silent Night', '2:14'],
     ],
-    footer: ['Isaac Watts, 1719', 'PSALM 98'],
+    footer: ['NOW PLAYING: YOU', 'SIDE B: SEE YOU NEXT CHRISTMAS'],
   },
   {
     // Game arcade: skor, nyawa, level.
@@ -133,24 +131,42 @@ export const TEMPLATES = [
     footer: ['INSERT JOY TO PLAY AGAIN'],
   },
   {
-    // Sertifikat resmi dengan segel dan tanda tangan.
-    id: 'sertifikat-natal',
+    // Obrolan grup: balon chat, foto dikirim sebagai pesan gambar.
+    id: 'chat-natal',
     name: 'I',
-    layout: 'certificate',
-    title: ['CERTIFICATE', 'of', 'JOY'],
-    lines: ['This certifies that', 'has officially come alive at the Christmas Celebration 2026'],
-    signers: ['Pastor', 'Date'],
+    layout: 'chat',
+    group: 'COME ALIVE SQUAD',
+    members: 'Bethel Teens & Youth',
+    thread: [
+      { from: 'Grace', text: 'Where are you guys??' },
+      { me: true, text: 'At the photobooth!' },
+      { me: true, photo: 0 },
+      { from: 'Kevin', text: 'OMG so cute!!' },
+      { from: 'Kevin', photo: 1 },
+      { me: true, text: 'Merry Christmas everyone!' },
+      { me: true, photo: 2 },
+    ],
+    typing: 'Grace',
+    footer: ['Merry Christmas!'],
   },
   {
-    // Poster "WANTED" ala koboi, versi Natal.
-    id: 'wanted-natal',
+    // Prakiraan cuaca Natal: 100% chance of joy.
+    id: 'cuaca-natal',
     name: 'J',
-    layout: 'wanted',
-    charge: 'FOR SPREADING TOO MUCH JOY',
-    notes: ['Armed with a smile', 'Highly joyful', 'Dangerously kind'],
-    reward: 'ENDLESS HUGS',
-    seen: 'Last seen at the Christmas Celebration 2026, Bandung',
-    footer: ['APPROACH WITH A SMILE'],
+    layout: 'forecast',
+    title: 'CHRISTMAS FORECAST',
+    place: 'BANDUNG',
+    slots: [
+      ['MORNING', 'Sunny smiles', 'sun', '28°'],
+      ['AFTERNOON', 'Snowfall of laughter', 'snow', '24°'],
+      ['EVENING', 'Starry joy', 'star', '19°'],
+    ],
+    extras: [
+      ['HUMIDITY', '100% LOVE'],
+      ['WIND', 'GENTLE PEACE'],
+      ['UV INDEX', 'VERY BRIGHT'],
+    ],
+    footer: ['"Every good and perfect gift is from above"', 'JAMES 1:17'],
   },
 ]
 

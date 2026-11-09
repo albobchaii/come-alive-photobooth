@@ -15,6 +15,7 @@ const MONO = '"Space Mono", "Courier New", monospace'
 const HAND = '"Caveat Brush", cursive'
 const FS = 19 // ukuran huruf dasar: ±32 karakter per baris
 const SERIF = 'Georgia, "Times New Roman", "Noto Serif", serif'
+const SANS = 'Roboto, "Helvetica Neue", Arial, sans-serif'
 
 const PATH = {
   tree: 'M0,-11 L-6,-2 H-3 L-9,6 H9 L3,-2 H6Z M0,6 V11',
@@ -266,6 +267,17 @@ export async function renderReceipt({ template: t, photos, meta, print = null })
     }
     if (cur) lines.push(cur)
     return lines
+  }
+
+  // Kotak bersudut bulat (path saja; panggil stroke/fill sesudahnya).
+  const rr = (x, top, w, h, r) => {
+    ctx.beginPath()
+    ctx.moveTo(x + r, top)
+    ctx.arcTo(x + w, top, x + w, top + h, r)
+    ctx.arcTo(x + w, top + h, x, top + h, r)
+    ctx.arcTo(x, top + h, x, top, r)
+    ctx.arcTo(x, top, x + w, top, r)
+    ctx.closePath()
   }
 
   const photoW = W - PAD * 2 - 4
@@ -671,72 +683,6 @@ export async function renderReceipt({ template: t, photos, meta, print = null })
     t.footer.forEach((f) => center(f, { size: 15, weight: 700, gap: 0.2 }))
     y += 2
     small(meta.no, `${meta.date} ${meta.time}`, 12)
-  } else if (t.layout === 'carol') {
-    /* ---------- Lembar lagu ---------- */
-    y += 4
-    fitCenter(t.title, { size: 42, weight: 'italic 700', family: SERIF, gap: 0.25 })
-    center(t.subtitle, { size: 13, weight: 700, spacing: 2, gap: 0.3 })
-    small(meta.no, `${meta.date} ${meta.time}`, 12)
-
-    const LINE = 7 // jarak antar garis paranada
-    const staff = (notes, lyric, first) => {
-      y += 18
-      const top = y
-      for (let k = 0; k < 5; k++) ctx.fillRect(PAD, top + k * LINE, W - PAD * 2, 1.4)
-      ctx.fillRect(PAD, top, 2, LINE * 4 + 1.4)
-      ctx.fillRect(W - PAD - 2, top, 2, LINE * 4 + 1.4)
-      let x0 = PAD + 18
-      if (first) {
-        setFont(16, 700)
-        ctx.textAlign = 'center'
-        ctx.fillText('4', PAD + 14, top + 13)
-        ctx.fillText('4', PAD + 14, top + 27)
-        x0 = PAD + 34
-      }
-      const step = (W - PAD - 16 - x0) / notes.length
-      notes.forEach((n, k) => {
-        const nx = x0 + step * (k + 0.5)
-        const ny = top + (n * LINE) / 2
-        if (n >= 10) ctx.fillRect(nx - 9, top + 5 * LINE, 18, 1.4) // garis bantu C4
-        ctx.save()
-        ctx.translate(nx, ny)
-        ctx.rotate((-20 * Math.PI) / 180)
-        ctx.beginPath()
-        ctx.ellipse(0, 0, 5.2, 3.8, 0, 0, Math.PI * 2)
-        ctx.fill()
-        ctx.restore()
-        ctx.lineWidth = 1.6
-        ctx.beginPath()
-        if (n >= 4) {
-          ctx.moveTo(nx + 4.6, ny - 1)
-          ctx.lineTo(nx + 4.6, ny - 24)
-        } else {
-          ctx.moveTo(nx - 4.6, ny + 1)
-          ctx.lineTo(nx - 4.6, ny + 24)
-        }
-        ctx.stroke()
-      })
-      y = top + LINE * 4 + 12
-      ctx.font = `italic 400 15px ${SERIF}`
-      ctx.textAlign = 'center'
-      y += 16
-      ctx.fillText(lyric, W / 2, y)
-      y += 8
-    }
-    images.forEach((img, i) => {
-      staff(t.notes[i], t.lyrics[i], i === 0)
-      y += 4
-      photoAt(img, PAD + 2, y, photoW, photoH)
-      y += photoH + 2
-    })
-    rule()
-    ctx.font = `italic 400 15px ${SERIF}`
-    ctx.textAlign = 'center'
-    y += 15
-    ctx.fillText(t.footer[0], W / 2, y)
-    y += 6
-    center(t.footer[1], { size: 13, weight: 700, spacing: 4, gap: 0.3 })
-    fitCenter('Sing along!', { size: 40, weight: 400, family: HAND, gap: 0.1 })
   } else if (t.layout === 'arcade') {
     /* ---------- Game arcade ---------- */
     small('1UP 2412', 'HI-SCORE 999999', 13, 700)
@@ -801,157 +747,398 @@ export async function renderReceipt({ template: t, photos, meta, print = null })
     center('CONTINUE?  > YES   NO', { size: 15, weight: 700, gap: 0.3 })
     t.footer.forEach((f) => center(f, { size: 12, weight: 700, spacing: 1, gap: 0.3 }))
     small(meta.no, `${meta.date} ${meta.time}`, 12)
-  } else if (t.layout === 'certificate') {
-    /* ---------- Sertifikat ---------- */
-    const top0 = y
-    const M = 16
-    y += 22
-    fitCenter(t.title[0], { size: 34, family: SERIF, gap: 0.05 })
-    center(t.title[1], { size: 30, family: HAND, gap: 0 })
-    fitCenter(t.title[2], { size: 66, family: SERIF, gap: 0.2 })
-    // hiasan garis-bintang-garis
-    ctx.fillRect(PAD + 60, y + 4, W / 2 - PAD - 80, 1.5)
-    ctx.fillRect(W / 2 + 20, y + 4, W / 2 - PAD - 80, 1.5)
-    icon(PATH.star, W / 2, y + 4, 0.9, { fill: true, width: 1 })
-    y += 18
-
-    ctx.font = `italic 400 16px ${SERIF}`
-    ctx.textAlign = 'center'
-    y += 16
-    ctx.fillText(t.lines[0], W / 2, y)
-    y += 34
-    ctx.save()
-    ctx.lineWidth = 1.5
-    ctx.setLineDash([2, 4])
-    ctx.beginPath()
-    ctx.moveTo(PAD + 40, y)
-    ctx.lineTo(W - PAD - 40, y)
-    ctx.stroke()
-    ctx.restore()
-    y += 6
-    ctx.font = `italic 400 15px ${SERIF}`
-    for (const l of wrapLines(t.lines[1], W - PAD * 2 - M * 2 - 10)) {
-      y += 18
-      ctx.fillText(l, W / 2, y)
-    }
-    y += 10
-
-    const pw = W - (PAD + M) * 2 - 4
-    const ph = Math.round(pw / PRINT.photoAspect)
-    images.forEach((img) => {
-      y += 10
-      photoAt(img, PAD + M + 2, y, pw, ph)
-      y += ph + 2
-    })
-
-    // segel + tanda tangan
-    y += 14
-    const scx = PAD + M + 44
-    const scy = y + 46
-    ctx.beginPath()
-    for (let k = 0; k < 48; k++) {
-      const r = k % 2 ? 34 : 40
-      const a = (k / 48) * Math.PI * 2
-      const px = scx + Math.cos(a) * r
-      const py = scy + Math.sin(a) * r
-      if (k) ctx.lineTo(px, py)
-      else ctx.moveTo(px, py)
-    }
-    ctx.closePath()
-    ctx.lineWidth = 2
-    ctx.stroke()
-    ctx.beginPath()
-    ctx.arc(scx, scy, 27, 0, Math.PI * 2)
-    ctx.stroke()
-    icon(PATH.star, scx, scy - 6, 1, { fill: true, width: 1 })
-    setFont(7, 700)
-    ctx.textAlign = 'center'
-    ctx.fillText('OFFICIAL', scx, scy + 15)
-
-    const lx0 = PAD + M + 104
-    const lx1 = W - PAD - M - 6
-    ;[
-      [t.signers[0], '', 36],
-      [t.signers[1], meta.date, 82],
-    ].forEach(([label, value, dy]) => {
-      if (value) {
-        setFont(22, 400, HAND)
-        ctx.textAlign = 'center'
-        ctx.fillText(value, (lx0 + lx1) / 2, y + dy - 6)
-      }
-      ctx.fillRect(lx0, y + dy, lx1 - lx0, 1.5)
-      setFont(11, 700)
-      ctx.textAlign = 'center'
-      ctx.fillText(label, (lx0 + lx1) / 2, y + dy + 15)
-    })
-    y += 100
-    center(meta.no, { size: 12, gap: 0.2 })
-    y += 12
-    // bingkai ganda + hiasan sudut
+  } else if (t.layout === 'playlist') {
+    /* ---------- Playlist: kaset + daftar lagu ---------- */
+    const cw = 300
+    const ch = 172
+    const x0 = (W - cw) / 2
+    const top = y
+    const cx = W / 2
     ctx.lineWidth = 3
-    ctx.strokeRect(PAD + 1, top0 + 2, W - PAD * 2 - 2, y - top0 - 2)
+    rr(x0, top, cw, ch, 14)
+    ctx.stroke()
     ctx.lineWidth = 1.5
-    ctx.strokeRect(PAD + 8, top0 + 9, W - PAD * 2 - 16, y - top0 - 16)
-    for (const [cx, cy] of [
-      [PAD + 8, top0 + 9],
-      [W - PAD - 8, top0 + 9],
-      [PAD + 8, y - 7],
-      [W - PAD - 8, y - 7],
-    ]) {
-      ctx.save()
-      ctx.translate(cx, cy)
-      ctx.rotate(Math.PI / 4)
-      ctx.fillRect(-5, -5, 10, 10)
-      ctx.restore()
-    }
-    y += 4
-  } else if (t.layout === 'wanted') {
-    /* ---------- Poster WANTED ---------- */
-    const top0 = y
-    const M = 12
-    y += 14
-    fitCenter('WANTED', { size: 96, family: SERIF, gap: 0.08, maxW: W - (PAD + M) * 2 - 8 })
-    fitCenter(t.charge, { size: 15, gap: 0.3 })
-    bar(2, 6)
-    const pw = W - (PAD + M) * 2 - 4
-    const ph = Math.round(pw / PRINT.photoAspect)
-    images.forEach((img, i) => {
-      y += i ? 18 : 10
-      photoAt(img, PAD + M + 2, y, pw, ph)
-      ctx.lineWidth = 4
-      ctx.strokeRect(PAD + M - 3, y - 5, pw + 10, ph + 10)
-      y += ph + 10
-      ctx.font = `italic 400 15px ${SERIF}`
-      ctx.textAlign = 'center'
-      y += 18
-      ctx.fillText(`Suspect #${i + 1}: ${t.notes[i]}`, W / 2, y)
-    })
-    bar(2, 10)
-    fitCenter('REWARD', { size: 46, family: SERIF, gap: 0.1 })
-    fitCenter(t.reward, { size: 30, gap: 0.35 })
-    ctx.font = `italic 400 14px ${SERIF}`
-    ctx.textAlign = 'center'
-    for (const l of wrapLines(t.seen, W - (PAD + M) * 2 - 10)) {
-      y += 17
-      ctx.fillText(l, W / 2, y)
-    }
-    y += 8
-    center(`CASE No. ${meta.no}`, { size: 13, weight: 700, spacing: 1, gap: 0.2 })
-    t.footer.forEach((f) => center(f, { size: 13, weight: 700, spacing: 2, gap: 0.2 }))
-    y += 14
-    ctx.lineWidth = 3
-    ctx.strokeRect(PAD + 1, top0 + 2, W - PAD * 2 - 2, y - top0 - 2)
-    for (const [cx, cy] of [
-      [PAD + 12, top0 + 12],
-      [W - PAD - 12, top0 + 12],
-      [PAD + 12, y - 10],
-      [W - PAD - 12, y - 10],
-    ]) {
+    for (const [sx, sy] of [[x0 + 11, top + 11], [x0 + cw - 11, top + 11], [x0 + 11, top + ch - 11], [x0 + cw - 11, top + ch - 11]]) {
       ctx.beginPath()
-      ctx.arc(cx, cy, 4, 0, Math.PI * 2)
+      ctx.arc(sx, sy, 4, 0, Math.PI * 2)
+      ctx.moveTo(sx - 3, sy)
+      ctx.lineTo(sx + 3, sy)
+      ctx.stroke()
+    }
+    // label
+    ctx.lineWidth = 2
+    rr(x0 + 22, top + 16, cw - 44, 98, 8)
+    ctx.stroke()
+    setFont(18, 700)
+    ctx.textAlign = 'left'
+    ctx.fillText('A', x0 + 32, top + 37)
+    setFont(11, 700)
+    ctx.textAlign = 'right'
+    ctx.fillText('C-90', x0 + cw - 32, top + 35)
+    let ms = 30
+    setFont(ms, 400, HAND)
+    while (ctx.measureText(t.mix).width > cw - 150) setFont(--ms, 400, HAND)
+    ctx.textAlign = 'center'
+    ctx.fillText(t.mix, cx, top + 42)
+    ctx.fillRect(x0 + 32, top + 50, cw - 64, 1.2)
+    // jendela + gulungan pita
+    rr(cx - 80, top + 58, 160, 46, 23)
+    ctx.stroke()
+    const ry = top + 81
+    for (const rx of [cx - 47, cx + 47]) {
+      ctx.lineWidth = 2
+      ctx.beginPath()
+      ctx.arc(rx, ry, 15, 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.beginPath()
+      ctx.arc(rx, ry, 6, 0, Math.PI * 2)
+      ctx.stroke()
+      ctx.lineWidth = 1.6
+      for (let k = 0; k < 6; k++) {
+        const a = (k * Math.PI) / 3
+        ctx.beginPath()
+        ctx.moveTo(rx + Math.cos(a) * 6, ry + Math.sin(a) * 6)
+        ctx.lineTo(rx + Math.cos(a) * 11, ry + Math.sin(a) * 11)
+        ctx.stroke()
+      }
+    }
+    ctx.lineWidth = 1.5
+    ctx.strokeRect(cx - 18, ry - 10, 36, 20)
+    ctx.fillRect(cx - 18, ry + 2, 36, 1.5)
+    setFont(10, 700)
+    ctx.textAlign = 'center'
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '2px'
+    ctx.fillText('STEREO · 2026 · HIGH JOY', cx + 1, top + 129)
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px'
+    // bagian bawah kaset
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.moveTo(x0 + 54, top + ch)
+    ctx.lineTo(x0 + 72, top + ch - 34)
+    ctx.lineTo(x0 + cw - 72, top + ch - 34)
+    ctx.lineTo(x0 + cw - 54, top + ch)
+    ctx.stroke()
+    for (const hx of [cx - 56, cx + 56]) {
+      ctx.beginPath()
+      ctx.arc(hx, top + ch - 16, 5, 0, Math.PI * 2)
+      ctx.stroke()
+    }
+    ctx.strokeRect(cx - 22, top + ch - 20, 8, 8)
+    ctx.strokeRect(cx + 14, top + ch - 20, 8, 8)
+    y = top + ch + 6
+
+    fitCenter(t.title, { size: 30, gap: 0.2 })
+    small(meta.no, `${meta.date} ${meta.time}`, 12)
+    bar(2, 6)
+
+    const fmt = (sec) => `${Math.floor(sec / 60)}:${String(Math.round(sec % 60)).padStart(2, '0')}`
+    images.forEach((img, i) => {
+      const [name, dur] = t.tracks[i]
+      y += 8
+      y += 18
+      setFont(17, 700)
+      ctx.textAlign = 'left'
+      ctx.fillText(String(i + 1).padStart(2, '0'), PAD + 2, y)
+      let ns = 19
+      ctx.font = `italic 700 ${ns}px ${SERIF}`
+      while (ctx.measureText(name).width > W - PAD * 2 - 100) ctx.font = `italic 700 ${--ns}px ${SERIF}`
+      ctx.fillText(name, PAD + 36, y)
+      setFont(14)
+      ctx.textAlign = 'right'
+      ctx.fillText(dur, W - PAD - 2, y)
+      y += 10
+      photoAt(img, PAD + 2, y, photoW, photoH)
+      y += photoH + 6
+      // progress bar
+      const [m, s] = dur.split(':').map(Number)
+      const total = m * 60 + s
+      const f = [0.3, 0.55, 0.8][i] ?? 0.5
+      setFont(12)
+      y += 14
+      ctx.textAlign = 'left'
+      ctx.fillText(fmt(total * f), PAD + 2, y)
+      ctx.textAlign = 'right'
+      ctx.fillText(`-${fmt(total * (1 - f))}`, W - PAD - 2, y)
+      const bx1 = PAD + 46
+      const bx2 = W - PAD - 50
+      const by = y - 4
+      ctx.fillRect(bx1, by - 1, bx2 - bx1, 2)
+      ctx.fillRect(bx1, by - 2.5, (bx2 - bx1) * f, 5)
+      ctx.beginPath()
+      ctx.arc(bx1 + (bx2 - bx1) * f, by, 6, 0, Math.PI * 2)
+      ctx.fill()
+      y += 6
+    })
+
+    // tombol pemutar
+    y += 14
+    const cy = y + 28
+    ctx.beginPath()
+    ctx.moveTo(cx - 84, cy - 13)
+    ctx.lineTo(cx - 108, cy)
+    ctx.lineTo(cx - 84, cy + 13)
+    ctx.closePath()
+    ctx.fill()
+    ctx.fillRect(cx - 114, cy - 13, 4, 26)
+    ctx.beginPath()
+    ctx.moveTo(cx + 84, cy - 13)
+    ctx.lineTo(cx + 108, cy)
+    ctx.lineTo(cx + 84, cy + 13)
+    ctx.closePath()
+    ctx.fill()
+    ctx.fillRect(cx + 110, cy - 13, 4, 26)
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    ctx.arc(cx, cy, 27, 0, Math.PI * 2)
+    ctx.stroke()
+    ctx.fillRect(cx - 10, cy - 12, 7, 24)
+    ctx.fillRect(cx + 3, cy - 12, 7, 24)
+    y = cy + 36
+    fitCenter(t.footer[0], { size: 24, gap: 0.35 })
+    center(t.footer[1], { size: 12, weight: 700, spacing: 1, gap: 0.3 })
+  } else if (t.layout === 'chat') {
+    /* ---------- Obrolan grup ---------- */
+    const top = y
+    ctx.lineWidth = 3
+    ctx.beginPath()
+    ctx.moveTo(PAD + 14, top + 12)
+    ctx.lineTo(PAD + 4, top + 24)
+    ctx.lineTo(PAD + 14, top + 36)
+    ctx.stroke()
+    const ax = PAD + 44
+    const ay = top + 24
+    ctx.lineWidth = 2
+    ctx.beginPath()
+    ctx.arc(ax, ay, 20, 0, Math.PI * 2)
+    ctx.stroke()
+    icon(PATH.star, ax, ay + 1, 1, { fill: true, width: 1 })
+    ctx.textAlign = 'left'
+    let gs = 19
+    ctx.font = `700 ${gs}px ${SANS}`
+    while (ctx.measureText(t.group).width > W - ax - 60) ctx.font = `700 ${--gs}px ${SANS}`
+    ctx.fillText(t.group, ax + 30, top + 20)
+    ctx.font = `400 13px ${SANS}`
+    ctx.fillText(t.members, ax + 30, top + 39)
+    for (let k = 0; k < 3; k++) {
+      ctx.beginPath()
+      ctx.arc(W - PAD - 6, top + 15 + k * 9, 2.4, 0, Math.PI * 2)
       ctx.fill()
     }
+    y = top + 52
+    ctx.fillRect(PAD, y, W - PAD * 2, 2)
+    y += 14
+    ctx.font = `700 12px ${SANS}`
+    const chip = `TODAY · ${meta.date}`
+    const chipW = ctx.measureText(chip).width + 24
+    ctx.lineWidth = 1.5
+    rr(W / 2 - chipW / 2, y, chipW, 22, 11)
+    ctx.stroke()
+    ctx.textAlign = 'center'
+    ctx.fillText(chip, W / 2, y + 15)
+    y += 34
+
+    const [hh, mm] = meta.time.split(':').map(Number)
+    const n = t.thread.length
+    const clock = (k) => {
+      const tot = (hh * 60 + mm - (n - 1 - k) + 1440) % 1440
+      return `${String(Math.floor(tot / 60)).padStart(2, '0')}:${String(tot % 60).padStart(2, '0')}`
+    }
+    const ticks = (x, yy) => {
+      ctx.lineWidth = 1.6
+      for (const dx of [0, 5]) {
+        ctx.beginPath()
+        ctx.moveTo(x + dx, yy - 4)
+        ctx.lineTo(x + dx + 3, yy - 1)
+        ctx.lineTo(x + dx + 8, yy - 8)
+        ctx.stroke()
+      }
+    }
+    let last = null
+    t.thread.forEach((msg, k) => {
+      const me = !!msg.me
+      const who = me ? 'me' : msg.from
+      if (!me && who !== last) {
+        ctx.font = `700 12px ${SANS}`
+        ctx.textAlign = 'left'
+        y += 12
+        ctx.fillText(msg.from, PAD + 8, y)
+        y += 5
+      }
+      if (who !== last && last) y += 2
+      last = who
+      const time = clock(k)
+      ctx.font = `400 11px ${SANS}`
+      const timeW = ctx.measureText(time).width + (me ? 16 : 0)
+      let bw
+      let bh
+      let lines = []
+      const pw = W - PAD * 2 - 52
+      const ph = Math.round(pw / PRINT.photoAspect)
+      if (msg.photo != null) {
+        bw = pw + 12
+        bh = ph + 30
+      } else {
+        ctx.font = `400 16px ${SANS}`
+        lines = wrapLines(msg.text, 240)
+        const tw = Math.max(...lines.map((l) => ctx.measureText(l).width))
+        bw = Math.max(tw, timeW) + 26
+        bh = lines.length * 20 + 30
+      }
+      const bx = me ? W - PAD - bw - 4 : PAD + 2
+      if (me) {
+        rr(bx + 4, y + 4, bw, bh, 14)
+        ctx.fill()
+      }
+      rr(bx, y, bw, bh, 14)
+      ctx.fillStyle = '#fff'
+      ctx.fill()
+      ctx.fillStyle = '#000'
+      ctx.lineWidth = 2
+      ctx.stroke()
+      if (msg.photo != null) {
+        photoAt(images[msg.photo], bx + 6, y + 6, pw, ph)
+      } else {
+        ctx.font = `400 16px ${SANS}`
+        ctx.textAlign = 'left'
+        lines.forEach((l, j) => ctx.fillText(l, bx + 13, y + 22 + j * 20))
+      }
+      ctx.font = `400 11px ${SANS}`
+      ctx.textAlign = 'right'
+      const tx = bx + bw - 10 - (me ? 16 : 0)
+      ctx.fillText(time, tx, y + bh - 8)
+      if (me) ticks(tx + 3, y + bh - 8)
+      y += bh + (me ? 4 : 0) + 8
+    })
+
+    // sedang mengetik…
     y += 4
+    rr(PAD + 2, y, 72, 32, 16)
+    ctx.lineWidth = 2
+    ctx.stroke()
+    for (let k = 0; k < 3; k++) {
+      ctx.beginPath()
+      ctx.arc(PAD + 22 + k * 16, y + 16, 4.5, 0, Math.PI * 2)
+      k < 2 ? ctx.fill() : ctx.stroke()
+    }
+    ctx.font = `italic 400 12px ${SANS}`
+    ctx.textAlign = 'left'
+    ctx.fillText(`${t.typing} is typing…`, PAD + 84, y + 21)
+    y += 46
+
+    // kolom ketik
+    ctx.lineWidth = 2
+    rr(PAD + 2, y, W - PAD * 2 - 54, 40, 20)
+    ctx.stroke()
+    ctx.font = `400 15px ${SANS}`
+    ctx.fillText('Type a message…', PAD + 18, y + 25)
+    const sx = W - PAD - 22
+    const sy = y + 20
+    ctx.beginPath()
+    ctx.arc(sx, sy, 20, 0, Math.PI * 2)
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.moveTo(sx - 8, sy - 9)
+    ctx.lineTo(sx + 10, sy)
+    ctx.lineTo(sx - 8, sy + 9)
+    ctx.lineTo(sx - 4, sy)
+    ctx.closePath()
+    ctx.fill()
+    y += 50
+    fitCenter(t.footer[0], { size: 42, weight: 400, family: HAND, gap: 0.3 })
+    small(meta.no, `${meta.date} ${meta.time}`, 12)
+  } else if (t.layout === 'forecast') {
+    /* ---------- Prakiraan cuaca ---------- */
+    const wx = (kind, cx, cy, r) => {
+      ctx.save()
+      ctx.lineWidth = Math.max(1.8, r / 9)
+      if (kind === 'sun') {
+        ctx.beginPath()
+        ctx.arc(cx, cy, r * 0.48, 0, Math.PI * 2)
+        ctx.stroke()
+        for (let k = 0; k < 8; k++) {
+          const a = (k * Math.PI) / 4
+          ctx.beginPath()
+          ctx.moveTo(cx + Math.cos(a) * r * 0.68, cy + Math.sin(a) * r * 0.68)
+          ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r)
+          ctx.stroke()
+        }
+      } else if (kind === 'snow') {
+        for (let k = 0; k < 6; k++) {
+          const a = (k * Math.PI) / 3 - Math.PI / 2
+          const px = cx + Math.cos(a) * r * 0.55
+          const py = cy + Math.sin(a) * r * 0.55
+          ctx.beginPath()
+          ctx.moveTo(cx, cy)
+          ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r)
+          for (const da of [-0.7, 0.7]) {
+            ctx.moveTo(px, py)
+            ctx.lineTo(px + Math.cos(a + da) * r * 0.35, py + Math.sin(a + da) * r * 0.35)
+          }
+          ctx.stroke()
+        }
+      } else {
+        icon(PATH.star, cx, cy, r / 11, { fill: kind === 'star', width: 1.4 })
+      }
+      ctx.restore()
+    }
+
+    center('COME ALIVE WEATHER SERVICE', { size: 12, weight: 700, spacing: 2, gap: 0.25 })
+    fitCenter(t.title, { size: 32, gap: 0.25 })
+    small(t.place, `${meta.date} ${meta.time}`, 13, 700)
+    bar(2, 6)
+
+    const hy = y + 52
+    wx('sun', PAD + 62, hy, 48)
+    const tx = (PAD + 128 + W - PAD) / 2
+    ctx.textAlign = 'center'
+    setFont(64, 700)
+    ctx.fillText('100%', tx, hy + 8)
+    setFont(15, 700)
+    ctx.fillText('CHANCE OF JOY', tx, hy + 34)
+    y = hy + 54
+    t.extras.forEach(([l, r]) => leader(l, r))
+    bar(2, 8)
+
+    images.forEach((img, i) => {
+      const [label, desc, kind, temp] = t.slots[i]
+      y += 6
+      const ry = y + 18
+      wx(kind, PAD + 16, ry, 15)
+      setFont(17, 700)
+      ctx.textAlign = 'left'
+      ctx.fillText(label, PAD + 42, ry - 2)
+      ctx.font = `italic 400 15px ${SERIF}`
+      ctx.fillText(desc, PAD + 42, ry + 16)
+      setFont(30, 700)
+      ctx.textAlign = 'right'
+      ctx.fillText(temp, W - PAD - 2, ry + 12)
+      y = ry + 28
+      photoAt(img, PAD + 2, y, photoW, photoH)
+      y += photoH + 8
+    })
+
+    // ramalan 5 hari
+    bar(2, 6)
+    center('5-DAY OUTLOOK', { size: 14, weight: 700, spacing: 3, gap: 0.4 })
+    const [dd, mo, yy] = meta.date.split('/').map(Number)
+    const DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
+    const kinds = ['sun', 'snow', 'star', 'sun', 'snow']
+    const colW = (W - PAD * 2) / 5
+    for (let d = 0; d < 5; d++) {
+      const cx = PAD + colW * (d + 0.5)
+      const day = new Date(yy, mo - 1, dd + d)
+      setFont(13, 700)
+      ctx.textAlign = 'center'
+      ctx.fillText(d ? DAYS[day.getDay()] : 'TODAY', cx, y + 13)
+      wx(kinds[d], cx, y + 38, 14)
+      setFont(13)
+      ctx.fillText('100%', cx, y + 70)
+    }
+    y += 76
+    bar(2, 8)
+    fitCenter(t.footer[0], { size: 17, weight: 'italic 400', family: SERIF, gap: 0.3 })
+    center(t.footer[1], { size: 13, weight: 700, spacing: 4, gap: 0.3 })
+    small(meta.no, 'STAY BRIGHT!', 12)
   } else {
     /* ---------- Kop ---------- */
     const title = EVENT.title.toUpperCase()

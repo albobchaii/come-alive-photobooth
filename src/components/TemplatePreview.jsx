@@ -258,7 +258,7 @@ function PolaroidPreview({ t, photos, activeIndex, r }) {
  * Pratinjau yang digambar langsung dengan renderer cetak (pasti sama dengan
  * hasil print). Foto diganti siluet abu-abu.
  */
-const CANVAS_LAYOUTS = new Set(['postcard', 'calendar', 'news', 'carol', 'arcade', 'certificate', 'wanted'])
+const CANVAS_LAYOUTS = new Set(['postcard', 'calendar', 'news', 'playlist', 'arcade', 'chat', 'forecast'])
 const previewCache = new Map()
 let placeholder
 
