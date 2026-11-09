@@ -31,7 +31,7 @@ export default function TemplatePage() {
       <div className="page__intro">
         <h1 className="page__title">Choose a Template</h1>
         <p className="page__sub">Pick your favorite frame for your photo strip</p>
-        <p className="tpl-hint">Swipe to see all {TEMPLATES.length} designs →</p>
+        <p className="tpl-hint">Swipe to see all designs</p>
       </div>
 
       <div className="tpl-grid" role="radiogroup" aria-label="Photo strip templates">
