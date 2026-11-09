@@ -120,6 +120,11 @@ export async function buildRawbtUrl(image, feedMm = 15) {
   return `intent:base64,${toBase64(bytes)}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;`
 }
 
+/** Link RawBT berisi teks pendek: cek apakah RawBT menerima kiriman dari website. */
+export function rawbtTextUrl(text) {
+  return `intent:${encodeURI(text)}#Intent;scheme=rawbt;package=ru.a402d.rawbtprinter;end;`
+}
+
 /** Kirim ke RawBT. Panggil langsung dari tombol (butuh sentuhan pengguna). */
 export function sendToRawbt(url) {
   window.location.href = url

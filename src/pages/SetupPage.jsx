@@ -16,7 +16,7 @@ import { renderReceipt } from '../lib/renderReceipt.js'
 import { testPhotos } from '../lib/testPhoto.js'
 import { TEMPLATES } from '../data/templates.js'
 import PrintArea from '../components/PrintArea.jsx'
-import { PRINT_METHODS, buildRawbtUrl, getPrintMethod, sendToRawbt, setPrintMethod } from '../lib/rawbt.js'
+import { PRINT_METHODS, buildRawbtUrl, getPrintMethod, rawbtTextUrl, sendToRawbt, setPrintMethod } from '../lib/rawbt.js'
 
 const ERRORS = {
   401: 'Token tidak dikenal. Cek lagi token untuk kiosk ini.',
@@ -31,6 +31,7 @@ export default function SetupPage() {
   const [msg, setMsg] = useState(null) // { ok, text }
   const [testPrint, setTestPrint] = useState(null) // { image, feedMm }
   const [method, setMethod] = useState(getPrintMethod)
+  const [rawbtUrl, setRawbtUrl] = useState('') // struk uji siap dikirim ke RawBT
 
   // Token dari QR setup: isi otomatis lalu hapus dari alamat.
   useEffect(() => {
@@ -57,7 +58,9 @@ export default function SetupPage() {
       const image = { url: canvas.toDataURL('image/png'), width: canvas.width, height: canvas.height }
       setMsg({ ok: true, text: `Mode: ${PRINT_MODES[print.mode]} · terang ${print.brightness} · kontras ${print.contrast}` })
       if (method === 'rawbt') {
-        sendToRawbt(await buildRawbtUrl(image, print.feedMm))
+        // Chrome hanya membuka RawBT kalau langsung dari sentuhan: siapkan dulu, kirim lewat tombol kedua.
+        setRawbtUrl(await buildRawbtUrl(image, print.feedMm))
+        setMsg({ ok: true, text: 'Struk uji siap. Tekan "Kirim ke printer".' })
       } else {
         setTestPrint({ image, feedMm: print.feedMm })
         // tunggu gambar masuk ke area cetak dulu
@@ -164,8 +167,29 @@ export default function SetupPage() {
                   Cek koneksi
                 </button>
                 <button type="button" className="back" onClick={printTest} disabled={busy}>
-                  Cetak uji
+                  {method === 'rawbt' ? 'Siapkan cetak uji' : 'Cetak uji'}
                 </button>
+                {method === 'rawbt' && rawbtUrl && (
+                  <button
+                    type="button"
+                    className="cta cta--sm"
+                    onClick={() => {
+                      sendToRawbt(rawbtUrl)
+                      setRawbtUrl('')
+                    }}
+                  >
+                    Kirim ke printer
+                  </button>
+                )}
+                {method === 'rawbt' && (
+                  <button
+                    type="button"
+                    className="back"
+                    onClick={() => sendToRawbt(rawbtTextUrl('Tes RawBT - Come Alive\n\n\n\n'))}
+                  >
+                    Tes teks RawBT
+                  </button>
+                )}
                 <button type="button" className="back" onClick={reset} disabled={busy}>
                   Hapus setup
                 </button>

@@ -529,6 +529,7 @@ function PrintPreview({ settings }) {
   const [lastPhotos, setLastPhotos] = useState(null) // null = belum dicek, [] = tidak ada
   const [filePhotos, setFilePhotos] = useState([])
   const [image, setImage] = useState(null)
+  const [rawbtUrl, setRawbtUrl] = useState('')
   const [error, setError] = useState('')
   const sample = useMemo(testPhotos, [])
   const timer = useRef(0)
@@ -575,6 +576,18 @@ function PrintPreview({ settings }) {
     }
   }, [settings, templateId, photos])
 
+  // Mode RawBT: siapkan data printer lebih dulu supaya tombol langsung mengirim.
+  useEffect(() => {
+    if (!image || getPrintMethod() !== 'rawbt') return
+    let alive = true
+    buildRawbtUrl(image, settings.feedMm)
+      .then((u) => alive && setRawbtUrl(u))
+      .catch(() => alive && setRawbtUrl(''))
+    return () => {
+      alive = false
+    }
+  }, [image, settings.feedMm])
+
   return (
     <div className="admin__card print-preview">
       <div className="admin__row admin__row--wrap">
@@ -607,9 +620,9 @@ function PrintPreview({ settings }) {
         <button
           type="button"
           className="cta cta--sm"
-          disabled={!image}
-          onClick={async () => {
-            if (getPrintMethod() === 'rawbt') sendToRawbt(await buildRawbtUrl(image, settings.feedMm))
+          disabled={!image || (getPrintMethod() === 'rawbt' && !rawbtUrl)}
+          onClick={() => {
+            if (getPrintMethod() === 'rawbt') sendToRawbt(rawbtUrl)
             else window.print()
           }}
         >
