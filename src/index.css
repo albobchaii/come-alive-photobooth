@@ -424,7 +424,7 @@ button.back {
 /* ---------- Grid pilihan template ---------- */
 .tpl-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 220px));
+  grid-template-columns: repeat(6, minmax(0, 190px));
   justify-content: center;
   gap: clamp(16px, 3vw, 32px) clamp(12px, 2.5vw, 28px);
   justify-items: center;
@@ -719,6 +719,214 @@ button.back {
   shape-rendering: crispEdges;
 }
 
+/* ---------- Template E: boarding pass ---------- */
+.tk__airline {
+  font-weight: 700;
+  font-size: 1.95em;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.tk__spaced {
+  letter-spacing: 0.4em;
+  margin-right: -0.4em;
+  font-size: 0.85em;
+}
+
+.tk__small {
+  font-size: 0.78em;
+}
+
+.tk__route {
+  display: flex;
+  align-items: center;
+  gap: 2cqw;
+}
+
+.tk__code {
+  font-weight: 700;
+  font-size: 2.7em;
+  line-height: 1;
+}
+
+.tk__path {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  border-top: 0.6cqw dashed var(--ink-print);
+  height: 0;
+}
+
+.tk__plane {
+  width: 11cqw;
+  padding: 0 1cqw;
+  background: #fff;
+  fill: var(--ink-print);
+}
+
+.tk__cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 1.5cqw;
+}
+
+.tk__cols--one {
+  grid-template-columns: 1fr;
+}
+
+.tk__label {
+  font-size: 0.66em;
+}
+
+.tk__val {
+  font-weight: 700;
+  font-size: 1.3em;
+  line-height: 1.15;
+}
+
+.tk__val--sm {
+  font-size: 0.95em;
+}
+
+.tk__val--xs {
+  font-size: 0.85em;
+}
+
+.tk__tear {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: 6cqw -8.6cqw 3cqw;
+  border-top: 0.6cqw dashed var(--ink-print);
+  height: 0;
+}
+
+.tk__tear::before,
+.tk__tear::after {
+  content: '';
+  position: absolute;
+  top: -3cqw;
+  width: 6cqw;
+  height: 6cqw;
+  border-radius: 50%;
+  background: var(--ink-print);
+}
+
+.tk__tear::before { left: -3cqw; }
+.tk__tear::after { right: -3cqw; }
+
+.tk__tear span {
+  padding: 0 1.5cqw;
+  background: #fff;
+  font-weight: 700;
+  font-size: 0.66em;
+  line-height: 1;
+  transform: translateY(-50%);
+}
+
+/* ---------- Template F: koran ---------- */
+.rc--news {
+  --serif: Georgia, 'Times New Roman', 'Noto Serif', serif;
+}
+
+.nw__mast {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 2.25em;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.nw__rule {
+  margin: 1.5cqw 0;
+  border-top: 0.4cqw solid var(--ink-print);
+}
+
+.nw__rule--heavy {
+  border-top-width: 1cqw;
+  border-bottom: 0.4cqw solid var(--ink-print);
+  height: 1.4cqw;
+}
+
+.nw__info {
+  font-size: 0.68em;
+}
+
+.nw__headline {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 2.9em;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.nw__deck {
+  margin-top: 1.5cqw;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.9em;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.nw__cap {
+  margin: 1cqw 0 2.5cqw;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.72em;
+  text-align: center;
+}
+
+.nw__cap--sm {
+  font-size: 0.6em;
+  line-height: 1.2;
+}
+
+.nw__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.6cqw;
+}
+
+.nw__ears {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.6cqw;
+  margin: 2cqw 0 3cqw;
+}
+
+.nw__ear {
+  padding: 1.5cqw 0;
+  border: 0.6cqw solid var(--ink-print);
+  text-align: center;
+}
+
+.nw__earlabel {
+  font-size: 0.66em;
+}
+
+.nw__earval {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 1.1em;
+  line-height: 1.2;
+}
+
+.nw__quote {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.95em;
+  text-align: center;
+}
+
+.nw__ref {
+  font-size: 0.75em;
+  letter-spacing: 0.2em;
+}
+
 /* ---------- Action bar bawah ---------- */
 .actionbar {
   position: fixed;
@@ -759,6 +967,12 @@ button.back {
   font-size: 1.6rem;
   padding: 10px 30px 12px;
   box-shadow: 3px 4px 0 rgba(0, 0, 0, 0.18);
+}
+
+@media (max-width: 1000px) {
+  .tpl-grid {
+    grid-template-columns: repeat(3, minmax(0, 220px));
+  }
 }
 
 @media (max-width: 520px) {

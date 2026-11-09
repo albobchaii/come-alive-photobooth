@@ -125,8 +125,147 @@ function SlotBox({ photo, active }) {
   )
 }
 
+const Plane = () => (
+  <svg className="tk__plane" viewBox="-16 -11 30 22" aria-hidden="true">
+    <path d="M-11,-1.5 L-3,-1.5 L-8,-10 L-4.5,-10 L4,-1.5 L10,-1.5 C13,-1.5 13,1.5 10,1.5 L4,1.5 L-4.5,10 L-8,10 L-3,1.5 L-11,1.5 L-13,5 L-15.5,5 L-14,0 L-15.5,-5 L-13,-5Z" />
+  </svg>
+)
+
+// Boarding pass "Flight to Bethlehem"
+function TicketPreview({ t, photos, activeIndex, r }) {
+  const [[fromCode, fromCity], [toCode, toCity]] = t.route
+  return (
+    <div className="tpl">
+      <div className="tpl__paper rc rc--ticket">
+        <Rule double />
+        <div className="rc__head">
+          <div className="tk__airline">{t.airline}</div>
+          <div className="rc__strong tk__spaced">BOARDING PASS</div>
+          <div className="tk__small">{EVENT.subtitle.toUpperCase()}</div>
+        </div>
+        <Rule />
+        <div className="tk__route">
+          <span className="tk__code">{fromCode}</span>
+          <span className="tk__path">
+            <Plane />
+          </span>
+          <span className="tk__code">{toCode}</span>
+        </div>
+        <div className="rc__line tk__small">
+          <span>{fromCity}</span>
+          <span>{toCity}</span>
+        </div>
+        <Rule />
+        <div className="tk__cols">
+          {t.fields.map(([l, v]) => (
+            <div key={l}>
+              <div className="tk__label">{l}</div>
+              <div className="tk__val">{v}</div>
+            </div>
+          ))}
+        </div>
+        <div className="tk__cols tk__cols--one">
+          <div>
+            <div className="tk__label">PASSENGER</div>
+            <div className="tk__val tk__val--sm">{t.passenger}</div>
+          </div>
+        </div>
+        <div className="tk__cols">
+          {[
+            ['DATE', r.date],
+            ['BOARDING', r.time],
+            ['NO.', r.no],
+          ].map(([l, v]) => (
+            <div key={l}>
+              <div className="tk__label">{l}</div>
+              <div className="tk__val tk__val--xs">{v}</div>
+            </div>
+          ))}
+        </div>
+        <Rule />
+        {Array.from({ length: PRINT.photosPerStrip }, (_, i) => (
+          <div key={i} className="rc__item">
+            <SlotBox photo={photos?.[i]} active={i === activeIndex} />
+            <div className="rc__line rc__line--leader">
+              <span>
+                {t.item} {i + 1}/{PRINT.photosPerStrip}
+              </span>
+              <span className="rc__dots" />
+              <span>OK</span>
+            </div>
+          </div>
+        ))}
+        <div className="tk__tear">
+          <span>TEAR HERE</span>
+        </div>
+        <div className="rc__center rc__strong tk__small">
+          {t.airline} {fromCode} &gt; {toCode}
+        </div>
+        <div className="rc__code">
+          <Barcode seed={t.id} />
+          <div className="rc__codetext">{r.no.replace('-', '')}2412</div>
+        </div>
+        {t.footer.map((f, i) => (
+          <div key={i} className="rc__center rc__strong">
+            {f}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// Halaman depan koran "The Bethel Times"
+function NewsPreview({ t, photos, activeIndex, r }) {
+  return (
+    <div className="tpl">
+      <div className="tpl__paper rc rc--news">
+        <div className="nw__mast">{t.masthead}</div>
+        <div className="nw__rule nw__rule--heavy" />
+        <div className="rc__line nw__info">
+          <span>VOL. 26 No. {r.no}</span>
+          <span>{r.date}</span>
+        </div>
+        <div className="nw__rule" />
+        <div className="nw__headline">
+          {t.headline.map((h) => (
+            <div key={h}>{h}</div>
+          ))}
+        </div>
+        <div className="nw__deck">{t.deck}</div>
+        <div className="nw__rule" />
+        <SlotBox photo={photos?.[0]} active={activeIndex === 0} />
+        <div className="nw__cap">Fig. 1 — {t.captions[0]}</div>
+        <div className="nw__pair">
+          {[1, 2].map((i) => (
+            <div key={i}>
+              <SlotBox photo={photos?.[i]} active={activeIndex === i} />
+              <div className="nw__cap nw__cap--sm">
+                Fig. {i + 1} — {t.captions[i]}
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="nw__rule" />
+        <div className="nw__ears">
+          {t.ears.map(([l, v]) => (
+            <div key={l} className="nw__ear">
+              <div className="rc__strong nw__earlabel">{l}</div>
+              <div className="nw__earval">{v}</div>
+            </div>
+          ))}
+        </div>
+        <div className="nw__quote">{t.footer[0]}</div>
+        <div className="rc__center rc__strong nw__ref">{t.footer[1]}</div>
+      </div>
+    </div>
+  )
+}
+
 export default function TemplatePreview({ template: t, photos, activeIndex = -1 }) {
   const r = SAMPLE_RECEIPT
+  if (t.layout === 'ticket') return <TicketPreview t={t} photos={photos} activeIndex={activeIndex} r={r} />
+  if (t.layout === 'news') return <NewsPreview t={t} photos={photos} activeIndex={activeIndex} r={r} />
   return (
     <div className="tpl">
       <div className="tpl__paper rc">

@@ -13,7 +13,10 @@ export const PRINT = {
 }
 
 /*
- * Template bergaya struk belanja.
+ * Template.
+ * - layout   : receipt (struk belanja, bawaan) | ticket (boarding pass) | news (halaman koran)
+ *
+ * Khusus layout receipt:
  * - header   : gaya kop (plain | xmas | hand | stars)
  * - item     : label tiap foto, mis. FOTO #1
  * - totals   : baris [kiri, kanan] di bagian total
@@ -75,6 +78,41 @@ export const TEMPLATES = [
     ],
     footer: ['PHOTOGRAPHED ITEMS ARE', 'NON-REFUNDABLE'],
     code: 'barcode',
+  },
+  {
+    // Boarding pass: penerbangan Natal ke Betlehem, dengan sobekan tiket di bawah.
+    id: 'tiket-betlehem',
+    name: 'E',
+    layout: 'ticket',
+    airline: 'COME ALIVE AIR',
+    route: [
+      ['BDG', 'BANDUNG'],
+      ['BTH', 'BETHLEHEM'],
+    ],
+    fields: [
+      ['FLIGHT', 'CA2412'],
+      ['GATE', 'B26'],
+      ['SEAT', '1A'],
+    ],
+    passenger: 'BETHEL TEENS & YOUTH',
+    item: 'BOARDING',
+    footer: ['FOLLOW THE STAR', 'Matthew 2:10'],
+    code: 'barcode',
+  },
+  {
+    // Halaman depan koran: foto jadi berita utama.
+    id: 'koran-natal',
+    name: 'F',
+    layout: 'news',
+    masthead: 'The Bethel Times',
+    headline: ['JOY TO THE', 'WORLD!'],
+    deck: 'Bethel Teens & Youth come alive this Christmas',
+    captions: ['Smiles spotted all over Bandung.', 'Joy: off the charts', 'Friends shine bright'],
+    ears: [
+      ['WEATHER', '100% JOY'],
+      ['PRICE', 'FREE'],
+    ],
+    footer: ['"Good news of great joy"', 'LUKE 2:10'],
   },
 ]
 
