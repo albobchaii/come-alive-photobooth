@@ -432,10 +432,15 @@ button.back {
   overscroll-behavior-x: contain;
   scroll-snap-type: x proximity;
   scrollbar-width: none;
-  padding: 18px 20px 24px;
-  margin: 0 -20px;
+  padding: 22px 20px 24px;
+  margin: 0;
   gap: clamp(16px, 3vw, 32px) clamp(12px, 2.5vw, 28px);
   justify-items: center;
+  /* bingkai area geser template */
+  border: 2.5px solid var(--ink);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 8px 24px rgba(200, 16, 46, 0.1);
 }
 
 .tpl-option {
