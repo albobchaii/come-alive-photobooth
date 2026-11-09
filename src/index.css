@@ -427,7 +427,7 @@ button.back {
   grid-auto-flow: column;
   grid-auto-columns: clamp(140px, 13vw, 190px);
   justify-content: safe center;
-  align-items: start;
+  align-items: stretch;
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-snap-type: x proximity;
@@ -446,11 +446,13 @@ button.back {
   width: 100%;
   max-width: 220px;
   padding: 14px 12px 12px;
-  border: 2.5px dashed transparent;
+  border: 2px solid rgba(200, 16, 46, 0.28);
   border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(120, 20, 30, 0.08);
   cursor: pointer;
   text-align: center;
-  transition: border-color 0.2s, background-color 0.2s, transform 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
+  transition: border-color 0.2s, background-color 0.2s, box-shadow 0.2s, transform 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
   animation: rise 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) both;
   animation-delay: calc(var(--i) * 0.06s);
 }
@@ -478,8 +480,10 @@ button.back {
 }
 
 .tpl-option.is-selected {
-  border-color: var(--ink);
-  background: var(--ink-soft);
+  border: 3.5px solid var(--ink);
+  padding: 12.5px 10.5px 10.5px;
+  background: #fff1f1;
+  box-shadow: 0 10px 24px rgba(200, 16, 46, 0.22);
   transform: translateY(-6px) rotate(var(--tilt));
 }
 
@@ -495,7 +499,8 @@ button.back {
 }
 
 .tpl-option__name {
-  margin-top: 12px;
+  margin-top: auto;
+  padding-top: 12px;
   font-weight: 800;
   font-size: 1rem;
 }
