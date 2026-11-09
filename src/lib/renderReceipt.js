@@ -490,8 +490,8 @@ export async function renderReceipt({ template: t, photos, meta, print = null })
     y += 4
     small(meta.no, `${meta.date} ${meta.time}`, 12)
   } else if (t.layout === 'calendar') {
-    /* ---------- Halaman kalender ---------- */
-    const [dd, mm, yyyy] = meta.date.split('/').map(Number)
+    /* ---------- Halaman kalender (tanggal dari template, cadangannya tanggal foto) ---------- */
+    const [dd, mm, yyyy] = (t.date || meta.date).split('/').map(Number)
     const day = new Date(yyyy, mm - 1, dd)
     const MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
     const DAYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']

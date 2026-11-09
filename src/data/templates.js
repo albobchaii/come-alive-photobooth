@@ -66,6 +66,7 @@ export const TEMPLATES = [
     id: 'kalender-natal',
     name: 'D',
     layout: 'calendar',
+    date: '05/12/2026', // tanggal yang tampil di kalender (tetap, bukan tanggal foto)
     tagline: 'COME ALIVE · CHRISTMAS 2026',
     todos: ['Smile together', 'Laugh out loud', 'Celebrate Jesus'],
     footer: ['"This is the day the Lord has made"', 'PSALM 118:24'],
