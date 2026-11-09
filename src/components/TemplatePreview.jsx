@@ -254,40 +254,11 @@ function PolaroidPreview({ t, photos, activeIndex, r }) {
   )
 }
 
-// Komik
-function ComicPreview({ t, photos, activeIndex, r }) {
-  return (
-    <div className="tpl">
-      <div className="tpl__paper rc rc--comic">
-        <div className="cm__title">{t.title}</div>
-        <div className="cm__banner">{t.banner}</div>
-        <div className="rc__line cm__small rc__strong">
-          <span>No. 26 {t.issue}</span>
-          <span>{r.date}</span>
-        </div>
-        {Array.from({ length: PRINT.photosPerStrip }, (_, i) => (
-          <div key={i} className="cm__panel">
-            <SlotBox photo={photos?.[i]} active={i === activeIndex} />
-            <span className="cm__box">{t.boxes[i]}</span>
-            <span className="cm__bubble">{t.bubbles[i]}</span>
-          </div>
-        ))}
-        <div className="cm__end">THE END</div>
-        {t.footer.map((f) => (
-          <div key={f} className="rc__center rc__strong cm__small">
-            {f}
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
 /*
  * Pratinjau yang digambar langsung dengan renderer cetak (pasti sama dengan
  * hasil print). Foto diganti siluet abu-abu.
  */
-const CANVAS_LAYOUTS = new Set(['postcard', 'news', 'carol', 'arcade', 'certificate', 'wanted'])
+const CANVAS_LAYOUTS = new Set(['postcard', 'calendar', 'news', 'carol', 'arcade', 'certificate', 'wanted'])
 const previewCache = new Map()
 let placeholder
 
@@ -346,7 +317,6 @@ function CanvasPreview({ t }) {
 export default function TemplatePreview({ template: t, photos, activeIndex = -1 }) {
   const r = SAMPLE_RECEIPT
   if (t.layout === 'polaroid') return <PolaroidPreview t={t} photos={photos} activeIndex={activeIndex} r={r} />
-  if (t.layout === 'comic') return <ComicPreview t={t} photos={photos} activeIndex={activeIndex} r={r} />
   if (t.layout === 'ticket') return <TicketPreview t={t} photos={photos} activeIndex={activeIndex} r={r} />
   if (CANVAS_LAYOUTS.has(t.layout)) return <CanvasPreview t={t} />
   return (

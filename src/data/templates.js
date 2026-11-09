@@ -14,7 +14,7 @@ export const PRINT = {
 
 /*
  * Template.
- * - layout   : receipt (struk belanja, bawaan) | polaroid | postcard | comic | ticket | news
+ * - layout   : receipt (struk belanja, bawaan) | polaroid | postcard | calendar | ticket | news
  *              | carol (lembar lagu) | arcade | certificate | wanted
  *
  * Khusus layout receipt:
@@ -62,16 +62,13 @@ export const TEMPLATES = [
     footer: ['MERRY CHRISTMAS', '& HAPPY NEW YEAR'],
   },
   {
-    // Komik: tiap foto jadi panel dengan kotak narasi dan balon kata.
-    id: 'komik-natal',
+    // Halaman kalender: tanggal besar + kalender mini (otomatis dari tanggal foto) + to-do list.
+    id: 'kalender-natal',
     name: 'D',
-    layout: 'comic',
-    title: 'COME ALIVE',
-    banner: 'COMICS',
-    issue: 'CHRISTMAS SPECIAL',
-    boxes: ['MEANWHILE, AT BETHEL...', 'SUDDENLY...', 'AND THEN...'],
-    bubbles: ['Ready?', 'Say cheese!', 'Merry Christmas!'],
-    footer: ['To be continued...', 'CHRISTMAS 2027'],
+    layout: 'calendar',
+    tagline: 'COME ALIVE · CHRISTMAS 2026',
+    todos: ['Smile together', 'Laugh out loud', 'Celebrate Jesus'],
+    footer: ['"This is the day the Lord has made"', 'PSALM 118:24'],
   },
   {
     // Boarding pass: penerbangan Natal ke Betlehem, dengan sobekan tiket di bawah.

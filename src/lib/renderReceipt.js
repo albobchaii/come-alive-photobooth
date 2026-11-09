@@ -489,76 +489,94 @@ export async function renderReceipt({ template: t, photos, meta, print = null })
     t.footer.forEach((f, i) => center(f, { size: i ? 14 : 16, weight: 700, spacing: i ? 0 : 3, gap: 0.3 }))
     y += 4
     small(meta.no, `${meta.date} ${meta.time}`, 12)
-  } else if (t.layout === 'comic') {
-    /* ---------- Komik ---------- */
-    y += 2
-    fitCenter(t.title, { size: 54, gap: 0.05 })
-    setFont(22, 700)
-    const bw = ctx.measureText(t.banner).width + 40
+  } else if (t.layout === 'calendar') {
+    /* ---------- Halaman kalender ---------- */
+    const [dd, mm, yyyy] = meta.date.split('/').map(Number)
+    const day = new Date(yyyy, mm - 1, dd)
+    const MONTHS = ['JANUARY', 'FEBRUARY', 'MARCH', 'APRIL', 'MAY', 'JUNE', 'JULY', 'AUGUST', 'SEPTEMBER', 'OCTOBER', 'NOVEMBER', 'DECEMBER']
+    const DAYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY']
+
+    // cincin spiral
     y += 6
-    ctx.save()
-    ctx.translate(W / 2, y + 15)
-    ctx.rotate((-3 * Math.PI) / 180)
-    ctx.fillRect(-bw / 2, -15, bw, 30)
-    ctx.fillStyle = '#fff'
-    ctx.textAlign = 'center'
-    if ('letterSpacing' in ctx) ctx.letterSpacing = '6px'
-    ctx.fillText(t.banner, 3, 8)
-    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px'
-    ctx.restore()
-    ctx.fillStyle = '#000'
-    y += 36
-    small(`No. 26  ${t.issue}`, meta.date, 12, 700)
-    small(meta.no, meta.time, 12)
+    const rings = 9
+    const rs = (W - PAD * 2) / rings
+    ctx.lineWidth = 2
+    for (let k = 0; k < rings; k++) {
+      const cx = PAD + rs * (k + 0.5)
+      ctx.beginPath()
+      ctx.ellipse(cx, y + 8, 5, 9, 0, 0, Math.PI * 2)
+      ctx.stroke()
+    }
+    y += 22
+    ctx.fillRect(PAD, y, W - PAD * 2, 2)
     y += 4
 
-    const pw = W - PAD * 2 - 6
-    const ph = Math.round(pw / PRINT.photoAspect)
+    center(`${MONTHS[mm - 1]} ${yyyy}`, { size: 24, weight: 700, spacing: 5, gap: 0 })
+    y -= 28 // angka tidak punya bagian atas/bawah setinggi ukuran hurufnya
+    fitCenter(String(dd), { size: 170, gap: 0 })
+    y += 16
+    center(DAYS[day.getDay()], { size: 18, weight: 700, spacing: 6, gap: 0.3 })
+    center(t.tagline, { size: 12, gap: 0.4 })
+
+    // kalender mini
+    bar(1.5, 6)
+    const cw = (W - PAD * 2) / 7
+    setFont(12, 700)
+    ctx.textAlign = 'center'
+    y += 14
+    'SMTWTFS'.split('').forEach((d, k) => ctx.fillText(d, PAD + cw * (k + 0.5), y))
+    y += 8
+    const first = new Date(yyyy, mm - 1, 1).getDay()
+    const count = new Date(yyyy, mm, 0).getDate()
+    const rowH = 21
+    setFont(13)
+    for (let n = 1; n <= count; n++) {
+      const cell = first + n - 1
+      const cx = PAD + cw * ((cell % 7) + 0.5)
+      const cy = y + Math.floor(cell / 7) * rowH + 15
+      if (n === dd) {
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.arc(cx, cy - 5, 11, 0, Math.PI * 2)
+        ctx.stroke()
+        setFont(13, 700)
+        ctx.fillText(String(n), cx, cy)
+        setFont(13)
+      } else ctx.fillText(String(n), cx, cy)
+    }
+    y += Math.ceil((first + count) / 7) * rowH + 6
+    bar(1.5, 6)
+
+    // to-do: kotak centang + foto
     images.forEach((img, i) => {
-      y += 12
-      const top = y
-      const px = PAD + 3
-      photoAt(img, px, top, pw, ph)
-      ctx.lineWidth = 4
-      ctx.strokeRect(px - 2, top - 2, pw + 4, ph + 4)
-
-      // kotak narasi (kiri atas)
-      setFont(12, 700)
-      const cap = t.boxes[i] || ''
-      const cw = ctx.measureText(cap).width + 16
-      ctx.fillStyle = '#fff'
-      ctx.fillRect(px - 2, top - 2, cw, 26)
-      ctx.fillStyle = '#000'
+      y += 8
+      const by = y
       ctx.lineWidth = 2
-      ctx.strokeRect(px - 2, top - 2, cw, 26)
+      ctx.strokeRect(PAD + 2, by, 20, 20)
+      ctx.lineWidth = 3
+      ctx.beginPath()
+      ctx.moveTo(PAD + 6, by + 10)
+      ctx.lineTo(PAD + 11, by + 16)
+      ctx.lineTo(PAD + 22, by - 2)
+      ctx.stroke()
+      setFont(28, 400, HAND)
       ctx.textAlign = 'left'
-      ctx.fillText(cap, px + 6, top + 15)
-
-      // balon kata (kanan bawah)
-      setFont(26, 400, HAND)
-      const text = t.bubbles[i] || ''
-      const rx = ctx.measureText(text).width / 2 + 18
-      const ry = 23
-      const bx = px + pw - rx - 10
-      const by = top + ph - ry - 16
-      const bubble = new Path2D()
-      bubble.ellipse(bx, by, rx, ry, 0, 0, Math.PI * 2)
-      bubble.moveTo(bx - rx * 0.35, by + ry * 0.7)
-      bubble.lineTo(bx - rx * 0.7, by + ry + 14)
-      bubble.lineTo(bx - rx * 0.05, by + ry * 0.85)
-      bubble.closePath()
-      ctx.lineWidth = 5
-      ctx.stroke(bubble)
-      ctx.fillStyle = '#fff'
-      ctx.fill(bubble)
-      ctx.fillStyle = '#000'
-      ctx.textAlign = 'center'
-      ctx.fillText(text, bx, by + 8)
-      y = top + ph + 2
+      ctx.fillText(t.todos[i] || '', PAD + 32, by + 20)
+      y = by + 28
+      photoAt(img, PAD + 2, y, photoW, photoH)
+      y += photoH + 2
     })
-    y += 22
-    fitCenter('THE END', { size: 42, gap: 0.15 })
-    t.footer.forEach((f) => center(f, { size: 14, weight: 700, gap: 0.2 }))
+
+    y += 10
+    ctx.font = `italic 400 17px ${SERIF}`
+    ctx.textAlign = 'center'
+    for (const l of wrapLines(t.footer[0], W - PAD * 2 - 10)) {
+      y += 20
+      ctx.fillText(l, W / 2, y)
+    }
+    y += 6
+    center(t.footer[1], { size: 13, weight: 700, spacing: 4, gap: 0.3 })
+    small(meta.no, meta.time, 12)
   } else if (t.layout === 'postcard') {
     /* ---------- Kartu pos ---------- */
     const stampW = 78
