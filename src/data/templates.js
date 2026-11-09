@@ -14,7 +14,8 @@ export const PRINT = {
 
 /*
  * Template.
- * - layout   : receipt (struk belanja, bawaan) | polaroid | film | comic | ticket (boarding pass) | news (koran)
+ * - layout   : receipt (struk belanja, bawaan) | polaroid | postcard | comic | ticket | news
+ *              | carol (lembar lagu) | arcade | certificate | wanted
  *
  * Khusus layout receipt:
  * - header   : gaya kop (plain | xmas | hand | stars)
@@ -52,14 +53,13 @@ export const TEMPLATES = [
     footer: ['PEACE ON EARTH', 'Luke 2:14'],
   },
   {
-    // Roll film 35mm dengan lubang sprocket di kedua sisi.
-    id: 'film-natal',
+    // Kartu pos: perangko + cap pos, kolom pesan dan alamat untuk ditulisi.
+    id: 'kartupos-natal',
     name: 'C',
-    layout: 'film',
-    brand: 'COME ALIVE FILM',
-    stock: 'CHRISTMAS 2026 · ISO 2412',
-    edge: 'CA 2026',
-    footer: ['~ DEVELOPED WITH JOY ~', 'Merry Christmas!'],
+    layout: 'postcard',
+    place: 'COME ALIVE',
+    address: ['BETHEL TEENS', '& YOUTH', 'BANDUNG, ID'],
+    footer: ['MERRY CHRISTMAS', '& HAPPY NEW YEAR'],
   },
   {
     // Komik: tiap foto jadi panel dengan kotak narasi dan balon kata.
@@ -107,6 +107,52 @@ export const TEMPLATES = [
       ['PRICE', 'FREE'],
     ],
     footer: ['"Good news of great joy"', 'LUKE 2:10'],
+  },
+  {
+    // Lembar lagu: paranada + not "Joy to the World" (melodi asli) di atas tiap foto.
+    id: 'lagu-natal',
+    name: 'G',
+    layout: 'carol',
+    title: 'Joy to the World',
+    subtitle: 'CAROL No. 26 · COME ALIVE',
+    lyrics: ['Joy to the world! the Lord is come', 'Let earth receive her King', "And heav'n and nature sing"],
+    // posisi not pada paranada: 0 = garis teratas (F5) … 8 = garis terbawah (E4), 10 = C4
+    notes: [
+      [3, 4, 5, 6, 7, 8, 9, 10],
+      [6, 5, 5, 4, 4, 3],
+      [3, 3, 4, 5, 6, 6, 7, 8],
+    ],
+    footer: ['Isaac Watts, 1719', 'PSALM 98'],
+  },
+  {
+    // Game arcade: skor, nyawa, level.
+    id: 'arcade-natal',
+    name: 'H',
+    layout: 'arcade',
+    title: 'COME ALIVE',
+    edition: 'CHRISTMAS EDITION',
+    levels: ['SMILE', 'LAUGH', 'JOY'],
+    footer: ['INSERT JOY TO PLAY AGAIN'],
+  },
+  {
+    // Sertifikat resmi dengan segel dan tanda tangan.
+    id: 'sertifikat-natal',
+    name: 'I',
+    layout: 'certificate',
+    title: ['CERTIFICATE', 'of', 'JOY'],
+    lines: ['This certifies that', 'has officially come alive at the Christmas Celebration 2026'],
+    signers: ['Pastor', 'Date'],
+  },
+  {
+    // Poster "WANTED" ala koboi, versi Natal.
+    id: 'wanted-natal',
+    name: 'J',
+    layout: 'wanted',
+    charge: 'FOR SPREADING TOO MUCH JOY',
+    notes: ['Armed with a smile', 'Highly joyful', 'Dangerously kind'],
+    reward: 'ENDLESS HUGS',
+    seen: 'Last seen at the Christmas Celebration 2026, Bandung',
+    footer: ['APPROACH WITH A SMILE'],
   },
 ]
 

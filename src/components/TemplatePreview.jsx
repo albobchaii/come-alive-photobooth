@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react'
 import { EVENT } from '../data/packages.js'
+import { renderReceipt } from '../lib/renderReceipt.js'
 import { PRINT, SAMPLE_RECEIPT, CASHIER } from '../data/templates.js'
 import { barcodeBars, qrCells } from '../lib/codes.js'
 
@@ -215,53 +217,6 @@ function TicketPreview({ t, photos, activeIndex, r }) {
   )
 }
 
-// Halaman depan koran "The Bethel Times"
-function NewsPreview({ t, photos, activeIndex, r }) {
-  return (
-    <div className="tpl">
-      <div className="tpl__paper rc rc--news">
-        <div className="nw__mast">{t.masthead}</div>
-        <div className="nw__rule nw__rule--heavy" />
-        <div className="rc__line nw__info">
-          <span>VOL. 26 No. {r.no}</span>
-          <span>{r.date}</span>
-        </div>
-        <div className="nw__rule" />
-        <div className="nw__headline">
-          {t.headline.map((h) => (
-            <div key={h}>{h}</div>
-          ))}
-        </div>
-        <div className="nw__deck">{t.deck}</div>
-        <div className="nw__rule" />
-        <SlotBox photo={photos?.[0]} active={activeIndex === 0} />
-        <div className="nw__cap">Fig. 1 — {t.captions[0]}</div>
-        <div className="nw__pair">
-          {[1, 2].map((i) => (
-            <div key={i}>
-              <SlotBox photo={photos?.[i]} active={activeIndex === i} />
-              <div className="nw__cap nw__cap--sm">
-                Fig. {i + 1} — {t.captions[i]}
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="nw__rule" />
-        <div className="nw__ears">
-          {t.ears.map(([l, v]) => (
-            <div key={l} className="nw__ear">
-              <div className="rc__strong nw__earlabel">{l}</div>
-              <div className="nw__earval">{v}</div>
-            </div>
-          ))}
-        </div>
-        <div className="nw__quote">{t.footer[0]}</div>
-        <div className="rc__center rc__strong nw__ref">{t.footer[1]}</div>
-      </div>
-    </div>
-  )
-}
-
 // Kartu Natal polaroid
 function PolaroidPreview({ t, photos, activeIndex, r }) {
   return (
@@ -299,37 +254,6 @@ function PolaroidPreview({ t, photos, activeIndex, r }) {
   )
 }
 
-// Roll film 35mm
-function FilmPreview({ t, photos, activeIndex, r }) {
-  return (
-    <div className="tpl">
-      <div className="tpl__paper rc rc--film">
-        <div className="fm__brand">{t.brand}</div>
-        <div className="rc__center rc__strong fm__small">{t.stock}</div>
-        <div className="rc__line fm__small">
-          <span>{r.no}</span>
-          <span>
-            {r.date} {r.time}
-          </span>
-        </div>
-        <div className="fm__strip">
-          {Array.from({ length: PRINT.photosPerStrip }, (_, i) => (
-            <div key={i} className="fm__frame">
-              <SlotBox photo={photos?.[i]} active={i === activeIndex} />
-              <div className="rc__line fm__edge">
-                <span>{i + 1}A &gt;</span>
-                <span>{t.edge}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="rc__center rc__strong fm__small fm__dev">{t.footer[0]}</div>
-        <div className="fm__hand">{t.footer[1]}</div>
-      </div>
-    </div>
-  )
-}
-
 // Komik
 function ComicPreview({ t, photos, activeIndex, r }) {
   return (
@@ -359,13 +283,72 @@ function ComicPreview({ t, photos, activeIndex, r }) {
   )
 }
 
+/*
+ * Pratinjau yang digambar langsung dengan renderer cetak (pasti sama dengan
+ * hasil print). Foto diganti siluet abu-abu.
+ */
+const CANVAS_LAYOUTS = new Set(['postcard', 'news', 'carol', 'arcade', 'certificate', 'wanted'])
+const previewCache = new Map()
+let placeholder
+
+function placeholderPhoto() {
+  if (placeholder) return placeholder
+  const c = document.createElement('canvas')
+  c.width = 400
+  c.height = 300
+  const x = c.getContext('2d')
+  x.fillStyle = '#e6e6e6'
+  x.fillRect(0, 0, 400, 300)
+  x.fillStyle = 'rgba(0,0,0,0.13)'
+  for (let i = 0; i < 400; i += 12)
+    for (let j = 0; j < 300; j += 12) {
+      x.beginPath()
+      x.arc(i + 6, j + 6, 1.8, 0, Math.PI * 2)
+      x.fill()
+    }
+  x.fillStyle = '#9b9b9b'
+  x.beginPath()
+  x.arc(200, 150, 42, 0, Math.PI * 2)
+  x.fill()
+  x.beginPath()
+  x.ellipse(200, 300, 88, 92, 0, Math.PI, 0)
+  x.fill()
+  placeholder = c.toDataURL()
+  return placeholder
+}
+
+function CanvasPreview({ t }) {
+  const [src, setSrc] = useState(() => previewCache.get(t.id) || null)
+  useEffect(() => {
+    if (src) return
+    let alive = true
+    const p = placeholderPhoto()
+    renderReceipt({ template: t, photos: [p, p, p], meta: SAMPLE_RECEIPT })
+      .then((c) => {
+        const url = c.toDataURL('image/png')
+        previewCache.set(t.id, url)
+        if (alive) setSrc(url)
+      })
+      .catch(() => {})
+    return () => {
+      alive = false
+    }
+  }, [t, src])
+  return (
+    <div className="tpl">
+      <div className="tpl__paper tpl__paper--img">
+        {src ? <img src={src} alt="" /> : <div className="tpl__placeholder" />}
+      </div>
+    </div>
+  )
+}
+
 export default function TemplatePreview({ template: t, photos, activeIndex = -1 }) {
   const r = SAMPLE_RECEIPT
   if (t.layout === 'polaroid') return <PolaroidPreview t={t} photos={photos} activeIndex={activeIndex} r={r} />
-  if (t.layout === 'film') return <FilmPreview t={t} photos={photos} activeIndex={activeIndex} r={r} />
   if (t.layout === 'comic') return <ComicPreview t={t} photos={photos} activeIndex={activeIndex} r={r} />
   if (t.layout === 'ticket') return <TicketPreview t={t} photos={photos} activeIndex={activeIndex} r={r} />
-  if (t.layout === 'news') return <NewsPreview t={t} photos={photos} activeIndex={activeIndex} r={r} />
+  if (CANVAS_LAYOUTS.has(t.layout)) return <CanvasPreview t={t} />
   return (
     <div className="tpl">
       <div className="tpl__paper rc">

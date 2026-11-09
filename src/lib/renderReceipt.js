@@ -227,10 +227,10 @@ export async function renderReceipt({ template: t, photos, meta, print = null })
   }
 
   // Teks di tengah; ukuran huruf dikecilkan sampai muat selebar kertas.
-  const fitCenter = (text, { size, weight = 700, family = MONO, gap = 0.15 }) => {
+  const fitCenter = (text, { size, weight = 700, family = MONO, gap = 0.15, maxW = W - PAD * 2 }) => {
     let s = size
     setFont(s, weight, family)
-    while (s > 10 && ctx.measureText(text).width > W - PAD * 2) setFont(--s, weight, family)
+    while (s > 10 && ctx.measureText(text).width > maxW) setFont(--s, weight, family)
     ctx.textAlign = 'center'
     y += s
     ctx.fillText(text, W / 2, y)
@@ -389,29 +389,18 @@ export async function renderReceipt({ template: t, photos, meta, print = null })
     }
     bar(1.5, 10)
 
-    // Foto utama
-    photoAt(images[0], PAD + 2, y, photoW, photoH)
-    y += photoH + 2
-    ctx.font = `italic 400 14px ${SERIF}`
-    ctx.textAlign = 'center'
-    y += 17
-    ctx.fillText(`Fig. 1 — ${t.captions[0]}`, W / 2, y)
-
-    // Dua foto kecil berdampingan
-    y += 12
-    const gapX = 10
-    const sw = Math.floor((W - PAD * 2 - 4 - gapX) / 2)
-    const sh = Math.round(sw / PRINT.photoAspect)
-    images.slice(1).forEach((img, k) => photoAt(img, PAD + 2 + k * (sw + gapX), y, sw, sh))
-    y += sh + 2
-    y += 15
-    images.slice(1).forEach((_, k) => {
-      let size = 12
-      const text = `Fig. ${k + 2} — ${t.captions[k + 1]}`
+    // Tiga foto bertumpuk, masing-masing dengan keterangan
+    images.forEach((img, i) => {
+      if (i) y += 12
+      photoAt(img, PAD + 2, y, photoW, photoH)
+      y += photoH + 2
+      let size = 14
+      const text = `Fig. ${i + 1} — ${t.captions[i]}`
       ctx.font = `italic 400 ${size}px ${SERIF}`
-      while (size > 9 && ctx.measureText(text).width > sw) ctx.font = `italic 400 ${--size}px ${SERIF}`
+      while (size > 10 && ctx.measureText(text).width > photoW) ctx.font = `italic 400 ${--size}px ${SERIF}`
       ctx.textAlign = 'center'
-      ctx.fillText(text, PAD + 2 + k * (sw + gapX) + sw / 2, y)
+      y += 17
+      ctx.fillText(text, W / 2, y)
     })
     bar(1.5, 10)
 
@@ -500,52 +489,6 @@ export async function renderReceipt({ template: t, photos, meta, print = null })
     t.footer.forEach((f, i) => center(f, { size: i ? 14 : 16, weight: 700, spacing: i ? 0 : 3, gap: 0.3 }))
     y += 4
     small(meta.no, `${meta.date} ${meta.time}`, 12)
-  } else if (t.layout === 'film') {
-    /* ---------- Roll film 35mm ---------- */
-    fitCenter(t.brand, { size: 34, gap: 0.15 })
-    center(t.stock, { size: 13, weight: 700, spacing: 2, gap: 0.3 })
-    small(meta.no, `${meta.date} ${meta.time}`, 12)
-    y += 10
-
-    const rail = 36
-    const x0 = PAD
-    const x1 = W - PAD
-    const pw = x1 - x0 - rail * 2 - 8
-    const ph = Math.round(pw / PRINT.photoAspect)
-    const filmTop = y
-    y += 14
-    images.forEach((img, i) => {
-      photoAt(img, x0 + rail + 4, y, pw, ph)
-      y += ph + 2
-      setFont(11, 700)
-      y += 13
-      ctx.textAlign = 'left'
-      ctx.fillText(`${i + 1}A >`, x0 + rail + 4, y)
-      ctx.textAlign = 'right'
-      ctx.fillText(t.edge, x1 - rail - 4, y)
-      y += 12
-    })
-    const filmBottom = y
-    ctx.lineWidth = 2
-    ctx.strokeRect(x0 + 1, filmTop, x1 - x0 - 2, filmBottom - filmTop)
-    ctx.beginPath()
-    ctx.moveTo(x0 + rail, filmTop)
-    ctx.lineTo(x0 + rail, filmBottom)
-    ctx.moveTo(x1 - rail, filmTop)
-    ctx.lineTo(x1 - rail, filmBottom)
-    ctx.stroke()
-    // lubang sprocket (garis saja, tanpa blok hitam)
-    for (let hy = filmTop + 10; hy + 14 <= filmBottom - 8; hy += 26) {
-      for (const hx of [x0 + rail / 2, x1 - rail / 2]) {
-        ctx.beginPath()
-        if (ctx.roundRect) ctx.roundRect(hx - 9, hy, 18, 14, 3)
-        else ctx.rect(hx - 9, hy, 18, 14)
-        ctx.stroke()
-      }
-    }
-    y += 16
-    center(t.footer[0], { size: 15, weight: 700, gap: 0.2 })
-    fitCenter(t.footer[1], { size: 44, weight: 400, family: HAND, gap: 0.1 })
   } else if (t.layout === 'comic') {
     /* ---------- Komik ---------- */
     y += 2
@@ -616,6 +559,381 @@ export async function renderReceipt({ template: t, photos, meta, print = null })
     y += 22
     fitCenter('THE END', { size: 42, gap: 0.15 })
     t.footer.forEach((f) => center(f, { size: 14, weight: 700, gap: 0.2 }))
+  } else if (t.layout === 'postcard') {
+    /* ---------- Kartu pos ---------- */
+    const stampW = 78
+    const stampH = 92
+    const sx = W - PAD - stampW - 2
+    const sy = y + 6
+    // perangko
+    ctx.save()
+    ctx.lineWidth = 2
+    ctx.setLineDash([3, 3])
+    ctx.strokeRect(sx, sy, stampW, stampH)
+    ctx.restore()
+    ctx.lineWidth = 2
+    ctx.strokeRect(sx + 6, sy + 6, stampW - 12, stampH - 12)
+    icon(PATH.star, sx + stampW / 2, sy + 38, 1.9)
+    setFont(13, 700)
+    ctx.textAlign = 'center'
+    ctx.fillText('2026', sx + stampW / 2, sy + 74)
+    // gelombang + cap pos
+    const pcx = sx - 14
+    const pcy = sy + 62
+    ctx.lineWidth = 2
+    for (let k = 0; k < 3; k++) {
+      const wy = pcy - 12 + k * 12
+      ctx.beginPath()
+      for (let x = PAD + 138; x <= pcx - 30; x += 2) {
+        const yy = wy + Math.sin((x - PAD) / 7) * 3
+        if (x === PAD + 138) ctx.moveTo(x, yy)
+        else ctx.lineTo(x, yy)
+      }
+      ctx.stroke()
+    }
+    ctx.fillStyle = '#fff'
+    ctx.beginPath()
+    ctx.arc(pcx, pcy, 33, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.fillStyle = '#000'
+    for (const r of [33, 26]) {
+      ctx.beginPath()
+      ctx.arc(pcx, pcy, r, 0, Math.PI * 2)
+      ctx.stroke()
+    }
+    setFont(9, 700)
+    ctx.fillText('BANDUNG', pcx, pcy - 5)
+    ctx.fillText(meta.date.slice(0, 5), pcx, pcy + 7)
+    ctx.fillText('2026', pcx, pcy + 17)
+    // tulisan POST CARD
+    ctx.textAlign = 'left'
+    ctx.font = `700 38px ${SERIF}`
+    ctx.fillText('POST', PAD + 2, sy + 34)
+    ctx.fillText('CARD', PAD + 2, sy + 72)
+    y = sy + stampH + 12
+
+    center('Greetings from', { size: 34, family: HAND, gap: 0.1 })
+    fitCenter(t.place, { size: 58, gap: 0.15 })
+    center(EVENT.subtitle, { size: 14, gap: 0.2 })
+    rule()
+    images.forEach((img, i) => {
+      if (i) y += 12
+      y += 2
+      photoAt(img, PAD + 2, y, photoW, photoH)
+      y += photoH + 2
+    })
+    rule()
+
+    // pesan (kiri) dan alamat (kanan)
+    const top = y + 4
+    const mid = Math.round(W * 0.56)
+    ctx.fillRect(mid, top, 2, 112)
+    setFont(26, 400, HAND)
+    ctx.textAlign = 'left'
+    ctx.fillText('Dear friend,', PAD + 4, top + 24)
+    ctx.save()
+    ctx.lineWidth = 1.5
+    ctx.setLineDash([2, 4])
+    for (const ly of [52, 80, 108]) {
+      ctx.beginPath()
+      ctx.moveTo(PAD + 4, top + ly)
+      ctx.lineTo(mid - 10, top + ly)
+      ctx.stroke()
+    }
+    ctx.restore()
+    setFont(12, 700)
+    ctx.fillText('TO:', mid + 12, top + 20)
+    t.address.forEach((line, k) => {
+      const ly = top + 48 + k * 28
+      setFont(13, 700)
+      ctx.fillText(line, mid + 12, ly)
+      ctx.fillRect(mid + 12, ly + 6, W - PAD - mid - 16, 1.5)
+    })
+    y = top + 124
+    t.footer.forEach((f) => center(f, { size: 15, weight: 700, gap: 0.2 }))
+    y += 2
+    small(meta.no, `${meta.date} ${meta.time}`, 12)
+  } else if (t.layout === 'carol') {
+    /* ---------- Lembar lagu ---------- */
+    y += 4
+    fitCenter(t.title, { size: 42, weight: 'italic 700', family: SERIF, gap: 0.25 })
+    center(t.subtitle, { size: 13, weight: 700, spacing: 2, gap: 0.3 })
+    small(meta.no, `${meta.date} ${meta.time}`, 12)
+
+    const LINE = 7 // jarak antar garis paranada
+    const staff = (notes, lyric, first) => {
+      y += 18
+      const top = y
+      for (let k = 0; k < 5; k++) ctx.fillRect(PAD, top + k * LINE, W - PAD * 2, 1.4)
+      ctx.fillRect(PAD, top, 2, LINE * 4 + 1.4)
+      ctx.fillRect(W - PAD - 2, top, 2, LINE * 4 + 1.4)
+      let x0 = PAD + 18
+      if (first) {
+        setFont(16, 700)
+        ctx.textAlign = 'center'
+        ctx.fillText('4', PAD + 14, top + 13)
+        ctx.fillText('4', PAD + 14, top + 27)
+        x0 = PAD + 34
+      }
+      const step = (W - PAD - 16 - x0) / notes.length
+      notes.forEach((n, k) => {
+        const nx = x0 + step * (k + 0.5)
+        const ny = top + (n * LINE) / 2
+        if (n >= 10) ctx.fillRect(nx - 9, top + 5 * LINE, 18, 1.4) // garis bantu C4
+        ctx.save()
+        ctx.translate(nx, ny)
+        ctx.rotate((-20 * Math.PI) / 180)
+        ctx.beginPath()
+        ctx.ellipse(0, 0, 5.2, 3.8, 0, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.restore()
+        ctx.lineWidth = 1.6
+        ctx.beginPath()
+        if (n >= 4) {
+          ctx.moveTo(nx + 4.6, ny - 1)
+          ctx.lineTo(nx + 4.6, ny - 24)
+        } else {
+          ctx.moveTo(nx - 4.6, ny + 1)
+          ctx.lineTo(nx - 4.6, ny + 24)
+        }
+        ctx.stroke()
+      })
+      y = top + LINE * 4 + 12
+      ctx.font = `italic 400 15px ${SERIF}`
+      ctx.textAlign = 'center'
+      y += 16
+      ctx.fillText(lyric, W / 2, y)
+      y += 8
+    }
+    images.forEach((img, i) => {
+      staff(t.notes[i], t.lyrics[i], i === 0)
+      y += 4
+      photoAt(img, PAD + 2, y, photoW, photoH)
+      y += photoH + 2
+    })
+    rule()
+    ctx.font = `italic 400 15px ${SERIF}`
+    ctx.textAlign = 'center'
+    y += 15
+    ctx.fillText(t.footer[0], W / 2, y)
+    y += 6
+    center(t.footer[1], { size: 13, weight: 700, spacing: 4, gap: 0.3 })
+    fitCenter('Sing along!', { size: 40, weight: 400, family: HAND, gap: 0.1 })
+  } else if (t.layout === 'arcade') {
+    /* ---------- Game arcade ---------- */
+    small('1UP 2412', 'HI-SCORE 999999', 13, 700)
+    y += 8
+    // judul dengan bayangan
+    let ts = 56
+    setFont(ts, 700)
+    while (ctx.measureText(t.title).width > W - PAD * 2 - 6) setFont(--ts, 700)
+    y += ts
+    ctx.textAlign = 'center'
+    ctx.fillText(t.title, W / 2 + 4, y + 4)
+    ctx.fillStyle = '#fff'
+    ctx.fillText(t.title, W / 2, y)
+    ctx.fillStyle = '#000'
+    ctx.lineWidth = 2
+    ctx.strokeText(t.title, W / 2, y)
+    y += 12
+    center(`- ${t.edition} -`, { size: 14, weight: 700, spacing: 2, gap: 0.4 })
+
+    // nyawa: hati piksel
+    const HEART = [' XX XX ', 'XXXXXXX', 'XXXXXXX', ' XXXXX ', '  XXX  ', '   X   ']
+    const PX = 3
+    const hw = 7 * PX
+    const totalW = hw * 3 + 14 * 2
+    let hx = (W - totalW) / 2
+    y += 4
+    for (let k = 0; k < 3; k++) {
+      HEART.forEach((row, ry) => {
+        for (let rx = 0; rx < row.length; rx++) if (row[rx] === 'X') ctx.fillRect(hx + rx * PX, y + ry * PX, PX, PX)
+      })
+      hx += hw + 14
+    }
+    y += 6 * PX + 4
+    center('PLAYER 1 READY', { size: 13, weight: 700, spacing: 2, gap: 0.2 })
+
+    images.forEach((img, i) => {
+      y += 14
+      setFont(15, 700)
+      ctx.textAlign = 'left'
+      y += 14
+      ctx.fillText(`LEVEL ${i + 1}: ${t.levels[i]}`, PAD + 2, y)
+      const bw = 96
+      const bx = W - PAD - bw - 2
+      ctx.lineWidth = 2
+      ctx.strokeRect(bx, y - 12, bw, 13)
+      ctx.fillRect(bx + 3, y - 9, ((bw - 6) * (i + 1)) / images.length, 7)
+      y += 14
+      photoAt(img, PAD + 2, y, photoW, photoH)
+      ctx.save()
+      ctx.lineWidth = 2
+      ctx.setLineDash([4, 4])
+      ctx.strokeRect(PAD - 2, y - 5, photoW + 8, photoH + 10)
+      ctx.restore()
+      y += photoH + 6
+      setFont(12, 700)
+      ctx.textAlign = 'right'
+      y += 13
+      ctx.fillText(`+${(i + 1) * 1000} PTS`, W - PAD - 2, y)
+    })
+    y += 10
+    fitCenter('STAGE CLEAR!', { size: 40, gap: 0.3 })
+    center('CONTINUE?  > YES   NO', { size: 15, weight: 700, gap: 0.3 })
+    t.footer.forEach((f) => center(f, { size: 12, weight: 700, spacing: 1, gap: 0.3 }))
+    small(meta.no, `${meta.date} ${meta.time}`, 12)
+  } else if (t.layout === 'certificate') {
+    /* ---------- Sertifikat ---------- */
+    const top0 = y
+    const M = 16
+    y += 22
+    fitCenter(t.title[0], { size: 34, family: SERIF, gap: 0.05 })
+    center(t.title[1], { size: 30, family: HAND, gap: 0 })
+    fitCenter(t.title[2], { size: 66, family: SERIF, gap: 0.2 })
+    // hiasan garis-bintang-garis
+    ctx.fillRect(PAD + 60, y + 4, W / 2 - PAD - 80, 1.5)
+    ctx.fillRect(W / 2 + 20, y + 4, W / 2 - PAD - 80, 1.5)
+    icon(PATH.star, W / 2, y + 4, 0.9, { fill: true, width: 1 })
+    y += 18
+
+    ctx.font = `italic 400 16px ${SERIF}`
+    ctx.textAlign = 'center'
+    y += 16
+    ctx.fillText(t.lines[0], W / 2, y)
+    y += 34
+    ctx.save()
+    ctx.lineWidth = 1.5
+    ctx.setLineDash([2, 4])
+    ctx.beginPath()
+    ctx.moveTo(PAD + 40, y)
+    ctx.lineTo(W - PAD - 40, y)
+    ctx.stroke()
+    ctx.restore()
+    y += 6
+    ctx.font = `italic 400 15px ${SERIF}`
+    for (const l of wrapLines(t.lines[1], W - PAD * 2 - M * 2 - 10)) {
+      y += 18
+      ctx.fillText(l, W / 2, y)
+    }
+    y += 10
+
+    const pw = W - (PAD + M) * 2 - 4
+    const ph = Math.round(pw / PRINT.photoAspect)
+    images.forEach((img) => {
+      y += 10
+      photoAt(img, PAD + M + 2, y, pw, ph)
+      y += ph + 2
+    })
+
+    // segel + tanda tangan
+    y += 14
+    const scx = PAD + M + 44
+    const scy = y + 46
+    ctx.beginPath()
+    for (let k = 0; k < 48; k++) {
+      const r = k % 2 ? 34 : 40
+      const a = (k / 48) * Math.PI * 2
+      const px = scx + Math.cos(a) * r
+      const py = scy + Math.sin(a) * r
+      if (k) ctx.lineTo(px, py)
+      else ctx.moveTo(px, py)
+    }
+    ctx.closePath()
+    ctx.lineWidth = 2
+    ctx.stroke()
+    ctx.beginPath()
+    ctx.arc(scx, scy, 27, 0, Math.PI * 2)
+    ctx.stroke()
+    icon(PATH.star, scx, scy - 6, 1, { fill: true, width: 1 })
+    setFont(7, 700)
+    ctx.textAlign = 'center'
+    ctx.fillText('OFFICIAL', scx, scy + 15)
+
+    const lx0 = PAD + M + 104
+    const lx1 = W - PAD - M - 6
+    ;[
+      [t.signers[0], '', 36],
+      [t.signers[1], meta.date, 82],
+    ].forEach(([label, value, dy]) => {
+      if (value) {
+        setFont(22, 400, HAND)
+        ctx.textAlign = 'center'
+        ctx.fillText(value, (lx0 + lx1) / 2, y + dy - 6)
+      }
+      ctx.fillRect(lx0, y + dy, lx1 - lx0, 1.5)
+      setFont(11, 700)
+      ctx.textAlign = 'center'
+      ctx.fillText(label, (lx0 + lx1) / 2, y + dy + 15)
+    })
+    y += 100
+    center(meta.no, { size: 12, gap: 0.2 })
+    y += 12
+    // bingkai ganda + hiasan sudut
+    ctx.lineWidth = 3
+    ctx.strokeRect(PAD + 1, top0 + 2, W - PAD * 2 - 2, y - top0 - 2)
+    ctx.lineWidth = 1.5
+    ctx.strokeRect(PAD + 8, top0 + 9, W - PAD * 2 - 16, y - top0 - 16)
+    for (const [cx, cy] of [
+      [PAD + 8, top0 + 9],
+      [W - PAD - 8, top0 + 9],
+      [PAD + 8, y - 7],
+      [W - PAD - 8, y - 7],
+    ]) {
+      ctx.save()
+      ctx.translate(cx, cy)
+      ctx.rotate(Math.PI / 4)
+      ctx.fillRect(-5, -5, 10, 10)
+      ctx.restore()
+    }
+    y += 4
+  } else if (t.layout === 'wanted') {
+    /* ---------- Poster WANTED ---------- */
+    const top0 = y
+    const M = 12
+    y += 14
+    fitCenter('WANTED', { size: 96, family: SERIF, gap: 0.08, maxW: W - (PAD + M) * 2 - 8 })
+    fitCenter(t.charge, { size: 15, gap: 0.3 })
+    bar(2, 6)
+    const pw = W - (PAD + M) * 2 - 4
+    const ph = Math.round(pw / PRINT.photoAspect)
+    images.forEach((img, i) => {
+      y += i ? 18 : 10
+      photoAt(img, PAD + M + 2, y, pw, ph)
+      ctx.lineWidth = 4
+      ctx.strokeRect(PAD + M - 3, y - 5, pw + 10, ph + 10)
+      y += ph + 10
+      ctx.font = `italic 400 15px ${SERIF}`
+      ctx.textAlign = 'center'
+      y += 18
+      ctx.fillText(`Suspect #${i + 1}: ${t.notes[i]}`, W / 2, y)
+    })
+    bar(2, 10)
+    fitCenter('REWARD', { size: 46, family: SERIF, gap: 0.1 })
+    fitCenter(t.reward, { size: 30, gap: 0.35 })
+    ctx.font = `italic 400 14px ${SERIF}`
+    ctx.textAlign = 'center'
+    for (const l of wrapLines(t.seen, W - (PAD + M) * 2 - 10)) {
+      y += 17
+      ctx.fillText(l, W / 2, y)
+    }
+    y += 8
+    center(`CASE No. ${meta.no}`, { size: 13, weight: 700, spacing: 1, gap: 0.2 })
+    t.footer.forEach((f) => center(f, { size: 13, weight: 700, spacing: 2, gap: 0.2 }))
+    y += 14
+    ctx.lineWidth = 3
+    ctx.strokeRect(PAD + 1, top0 + 2, W - PAD * 2 - 2, y - top0 - 2)
+    for (const [cx, cy] of [
+      [PAD + 12, top0 + 12],
+      [W - PAD - 12, top0 + 12],
+      [PAD + 12, y - 10],
+      [W - PAD - 12, y - 10],
+    ]) {
+      ctx.beginPath()
+      ctx.arc(cx, cy, 4, 0, Math.PI * 2)
+      ctx.fill()
+    }
+    y += 4
   } else {
     /* ---------- Kop ---------- */
     const title = EVENT.title.toUpperCase()
