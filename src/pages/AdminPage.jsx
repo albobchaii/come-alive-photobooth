@@ -12,6 +12,7 @@ import { TEMPLATES } from '../data/templates.js'
 import { renderReceipt } from '../lib/renderReceipt.js'
 import { testPhotos } from '../lib/testPhoto.js'
 import PrintArea from '../components/PrintArea.jsx'
+import { buildRawbtUrl, getPrintMethod, sendToRawbt } from '../lib/rawbt.js'
 import {
   DEFAULT_PRINT_SETTINGS,
   DITHER_PRESET,
@@ -603,7 +604,15 @@ function PrintPreview({ settings }) {
           Pilih foto…
           <input type="file" accept="image/*" multiple onChange={pickFiles} />
         </label>
-        <button type="button" className="cta cta--sm" disabled={!image} onClick={() => window.print()}>
+        <button
+          type="button"
+          className="cta cta--sm"
+          disabled={!image}
+          onClick={async () => {
+            if (getPrintMethod() === 'rawbt') sendToRawbt(await buildRawbtUrl(image, settings.feedMm))
+            else window.print()
+          }}
+        >
           Cetak uji
         </button>
       </div>

@@ -16,6 +16,7 @@ import { renderReceipt } from '../lib/renderReceipt.js'
 import { testPhotos } from '../lib/testPhoto.js'
 import { TEMPLATES } from '../data/templates.js'
 import PrintArea from '../components/PrintArea.jsx'
+import { PRINT_METHODS, buildRawbtUrl, getPrintMethod, sendToRawbt, setPrintMethod } from '../lib/rawbt.js'
 
 const ERRORS = {
   401: 'Token tidak dikenal. Cek lagi token untuk kiosk ini.',
@@ -29,6 +30,7 @@ export default function SetupPage() {
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState(null) // { ok, text }
   const [testPrint, setTestPrint] = useState(null) // { image, feedMm }
+  const [method, setMethod] = useState(getPrintMethod)
 
   // Token dari QR setup: isi otomatis lalu hapus dari alamat.
   useEffect(() => {
@@ -52,13 +54,15 @@ export default function SetupPage() {
         meta: { no: `UJI-${kiosk?.code || 'X'}`, date: new Date().toLocaleDateString('id-ID'), time: 'UJI' },
         print,
       })
-      setTestPrint({
-        image: { url: canvas.toDataURL('image/png'), width: canvas.width, height: canvas.height },
-        feedMm: print.feedMm,
-      })
+      const image = { url: canvas.toDataURL('image/png'), width: canvas.width, height: canvas.height }
       setMsg({ ok: true, text: `Mode: ${PRINT_MODES[print.mode]} · terang ${print.brightness} · kontras ${print.contrast}` })
-      // tunggu gambar masuk ke area cetak dulu
-      setTimeout(() => window.print(), 300)
+      if (method === 'rawbt') {
+        sendToRawbt(await buildRawbtUrl(image, print.feedMm))
+      } else {
+        setTestPrint({ image, feedMm: print.feedMm })
+        // tunggu gambar masuk ke area cetak dulu
+        setTimeout(() => window.print(), 300)
+      }
     } catch {
       setMsg({ ok: false, text: 'Gagal membuat struk uji.' })
     } finally {
@@ -166,6 +170,26 @@ export default function SetupPage() {
                   Hapus setup
                 </button>
               </div>
+            )}
+
+            {kiosk && (
+              <label className="setup__method">
+                <span className="setup__label">Cara cetak di tablet ini</span>
+                <select
+                  className="setup__input"
+                  value={method}
+                  onChange={(e) => {
+                    setMethod(e.target.value)
+                    setPrintMethod(e.target.value)
+                  }}
+                >
+                  {Object.entries(PRINT_METHODS).map(([id, label]) => (
+                    <option key={id} value={id}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
             )}
 
             {msg && <p className={`setup__msg${msg.ok ? '' : ' is-error'}`}>{msg.text}</p>}

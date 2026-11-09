@@ -1377,6 +1377,12 @@ button.back {
   justify-self: start;
 }
 
+.setup__method {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+}
+
 .setup__row {
   display: flex;
   flex-wrap: wrap;

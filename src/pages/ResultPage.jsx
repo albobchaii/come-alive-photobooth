@@ -4,6 +4,7 @@ import { renderReceipt } from '../lib/renderReceipt.js'
 import { getReceiptMeta, getShots, getTemplateId, setReceiptImage } from '../lib/session.js'
 import { uploadReceipt } from '../lib/softfile.js'
 import { refreshPrintSettings } from '../lib/printConfig.js'
+import { buildRawbtUrl, getPrintMethod, sendToRawbt } from '../lib/rawbt.js'
 import { TEMPLATES } from '../data/templates.js'
 import CancelButton from '../components/CancelButton.jsx'
 import PrintArea from '../components/PrintArea.jsx'
@@ -20,6 +21,8 @@ export default function ResultPage() {
   const [feedMm, setFeedMm] = useState(15)
   const [error, setError] = useState('')
   const [printed, setPrinted] = useState(false)
+  const [method] = useState(getPrintMethod)
+  const [rawbtUrl, setRawbtUrl] = useState('')
 
   useEffect(() => {
     if (!template || !complete) return
@@ -57,6 +60,18 @@ export default function ResultPage() {
     }
   }, [template, complete, shots, meta])
 
+  // Mode RawBT: siapkan data printer lebih dulu supaya tombol langsung mencetak.
+  useEffect(() => {
+    if (method !== 'rawbt' || !printImage) return
+    let alive = true
+    buildRawbtUrl(printImage, feedMm)
+      .then((url) => alive && setRawbtUrl(url))
+      .catch(() => alive && setError('Could not prepare the print. Tap Cancel and try again.'))
+    return () => {
+      alive = false
+    }
+  }, [method, printImage, feedMm])
+
   useEffect(() => {
     const onAfterPrint = () => setPrinted(true)
     window.addEventListener('afterprint', onAfterPrint)
@@ -70,6 +85,12 @@ export default function ResultPage() {
   // Chrome menahan window.print() sampai dialog ditutup; browser lain tidak,
   // jadi tunggu event 'afterprint' dengan cadangan waktu.
   const printAndShowQr = () => {
+    if (method === 'rawbt') {
+      sendToRawbt(rawbtUrl)
+      setPrinted(true)
+      setTimeout(() => navigate('/softfile'), 1500)
+      return
+    }
     let moved = false
     const go = () => {
       if (moved) return
@@ -106,7 +127,7 @@ export default function ResultPage() {
             </p>
 
             <div className="result__actions">
-              <button type="button" className="cta" onClick={printAndShowQr} disabled={!printImage}>
+              <button type="button" className="cta" onClick={printAndShowQr} disabled={method === 'rawbt' ? !rawbtUrl : !printImage}>
                 {printed ? 'Print Again' : 'Print Receipt'}
               </button>
             </div>
