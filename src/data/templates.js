@@ -14,7 +14,7 @@ export const PRINT = {
 
 /*
  * Template.
- * - layout   : receipt (struk belanja, bawaan) | ticket (boarding pass) | news (halaman koran)
+ * - layout   : receipt (struk belanja, bawaan) | polaroid | film | comic | ticket (boarding pass) | news (koran)
  *
  * Khusus layout receipt:
  * - header   : gaya kop (plain | xmas | hand | stars)
@@ -43,41 +43,35 @@ export const TEMPLATES = [
     code: 'barcode',
   },
   {
-    id: 'struk-natal',
+    // Kartu Natal: foto dalam bingkai polaroid, ada kolom To/From untuk ditulisi.
+    id: 'polaroid-natal',
     name: 'B',
-    header: 'xmas',
-    item: 'GIFT',
-    totals: [
-      ['SUBTOTAL', '3 GIFTS'],
-      ['PRICE', 'FREE'],
-      ['STATUS', 'PAID'],
-    ],
-    footer: ['John 3:16', '*** MERRY CHRISTMAS ***'],
-    code: 'barcode',
+    layout: 'polaroid',
+    title: 'Merry Christmas',
+    captions: ['joy!', 'peace!', 'love!'],
+    footer: ['PEACE ON EARTH', 'Luke 2:14'],
   },
   {
-    id: 'struk-doodle',
+    // Roll film 35mm dengan lubang sprocket di kedua sisi.
+    id: 'film-natal',
     name: 'C',
-    header: 'hand',
-    item: 'MOMENT',
-    totals: [
-      ['TOTAL', '3 MOMENTS'],
-      ['LAUGHS', 'UNLIMITED'],
-    ],
-    footer: ['Keep this receipt', 'as a memory :)'],
-    code: 'qr',
+    layout: 'film',
+    brand: 'COME ALIVE FILM',
+    stock: 'CHRISTMAS 2026 · ISO 2412',
+    edge: 'CA 2026',
+    footer: ['~ DEVELOPED WITH JOY ~', 'Merry Christmas!'],
   },
   {
-    id: 'struk-kasir',
+    // Komik: tiap foto jadi panel dengan kotak narasi dan balon kata.
+    id: 'komik-natal',
     name: 'D',
-    header: 'stars',
-    item: 'POSE',
-    totals: [
-      ['QTY', '3 POSES'],
-      ['HUG TAX 100%', 'FREE'],
-    ],
-    footer: ['PHOTOGRAPHED ITEMS ARE', 'NON-REFUNDABLE'],
-    code: 'barcode',
+    layout: 'comic',
+    title: 'COME ALIVE',
+    banner: 'COMICS',
+    issue: 'CHRISTMAS SPECIAL',
+    boxes: ['MEANWHILE, AT BETHEL...', 'SUDDENLY...', 'AND THEN...'],
+    bubbles: ['Ready?', 'Say cheese!', 'Merry Christmas!'],
+    footer: ['To be continued...', 'CHRISTMAS 2027'],
   },
   {
     // Boarding pass: penerbangan Natal ke Betlehem, dengan sobekan tiket di bawah.

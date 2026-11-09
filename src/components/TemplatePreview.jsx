@@ -262,8 +262,108 @@ function NewsPreview({ t, photos, activeIndex, r }) {
   )
 }
 
+// Kartu Natal polaroid
+function PolaroidPreview({ t, photos, activeIndex, r }) {
+  return (
+    <div className="tpl">
+      <div className="tpl__paper rc rc--polaroid">
+        <div className="pl__title">{t.title}</div>
+        <div className="rc__center rc__strong pl__spaced">COME ALIVE PHOTOBOOTH</div>
+        <div className="rc__center pl__small">{EVENT.subtitle}</div>
+        {Array.from({ length: PRINT.photosPerStrip }, (_, i) => (
+          <div key={i} className="pl__frame">
+            <span className={`pl__tape pl__tape--${i}`} />
+            <SlotBox photo={photos?.[i]} active={i === activeIndex} />
+            <div className="pl__cap">{t.captions[i]}</div>
+          </div>
+        ))}
+        {['To:', 'From:'].map((l) => (
+          <div key={l} className="pl__line">
+            <span>{l}</span>
+            <span className="pl__blank" />
+          </div>
+        ))}
+        {t.footer.map((f, i) => (
+          <div key={i} className={`rc__center rc__strong${i ? ' pl__small' : ' pl__spaced'}`}>
+            {f}
+          </div>
+        ))}
+        <div className="rc__line pl__small">
+          <span>{r.no}</span>
+          <span>
+            {r.date} {r.time}
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Roll film 35mm
+function FilmPreview({ t, photos, activeIndex, r }) {
+  return (
+    <div className="tpl">
+      <div className="tpl__paper rc rc--film">
+        <div className="fm__brand">{t.brand}</div>
+        <div className="rc__center rc__strong fm__small">{t.stock}</div>
+        <div className="rc__line fm__small">
+          <span>{r.no}</span>
+          <span>
+            {r.date} {r.time}
+          </span>
+        </div>
+        <div className="fm__strip">
+          {Array.from({ length: PRINT.photosPerStrip }, (_, i) => (
+            <div key={i} className="fm__frame">
+              <SlotBox photo={photos?.[i]} active={i === activeIndex} />
+              <div className="rc__line fm__edge">
+                <span>{i + 1}A &gt;</span>
+                <span>{t.edge}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="rc__center rc__strong fm__small fm__dev">{t.footer[0]}</div>
+        <div className="fm__hand">{t.footer[1]}</div>
+      </div>
+    </div>
+  )
+}
+
+// Komik
+function ComicPreview({ t, photos, activeIndex, r }) {
+  return (
+    <div className="tpl">
+      <div className="tpl__paper rc rc--comic">
+        <div className="cm__title">{t.title}</div>
+        <div className="cm__banner">{t.banner}</div>
+        <div className="rc__line cm__small rc__strong">
+          <span>No. 26 {t.issue}</span>
+          <span>{r.date}</span>
+        </div>
+        {Array.from({ length: PRINT.photosPerStrip }, (_, i) => (
+          <div key={i} className="cm__panel">
+            <SlotBox photo={photos?.[i]} active={i === activeIndex} />
+            <span className="cm__box">{t.boxes[i]}</span>
+            <span className="cm__bubble">{t.bubbles[i]}</span>
+          </div>
+        ))}
+        <div className="cm__end">THE END</div>
+        {t.footer.map((f) => (
+          <div key={f} className="rc__center rc__strong cm__small">
+            {f}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function TemplatePreview({ template: t, photos, activeIndex = -1 }) {
   const r = SAMPLE_RECEIPT
+  if (t.layout === 'polaroid') return <PolaroidPreview t={t} photos={photos} activeIndex={activeIndex} r={r} />
+  if (t.layout === 'film') return <FilmPreview t={t} photos={photos} activeIndex={activeIndex} r={r} />
+  if (t.layout === 'comic') return <ComicPreview t={t} photos={photos} activeIndex={activeIndex} r={r} />
   if (t.layout === 'ticket') return <TicketPreview t={t} photos={photos} activeIndex={activeIndex} r={r} />
   if (t.layout === 'news') return <NewsPreview t={t} photos={photos} activeIndex={activeIndex} r={r} />
   return (

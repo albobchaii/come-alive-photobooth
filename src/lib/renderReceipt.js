@@ -436,6 +436,186 @@ export async function renderReceipt({ template: t, photos, meta, print = null })
     ctx.fillText(t.footer[0], W / 2, y)
     y += 6
     center(t.footer[1], { size: 14, weight: 700, spacing: 4 })
+  } else if (t.layout === 'polaroid') {
+    /* ---------- Kartu Natal polaroid ---------- */
+    y += 4
+    fitCenter(t.title, { size: 66, weight: 400, family: HAND, gap: 0.38 })
+    center('COME ALIVE PHOTOBOOTH', { size: 14, weight: 700, spacing: 4, gap: 0.2 })
+    center(EVENT.subtitle, { size: 14, gap: 0.2 })
+    y += 6
+
+    const fx = PAD + 8
+    const fw = W - fx * 2
+    const pw = fw - 24
+    const ph = Math.round(pw / PRINT.photoAspect)
+    images.forEach((img, i) => {
+      y += 18
+      const top = y
+      const fh = 12 + ph + 48
+      ctx.lineWidth = 2
+      ctx.strokeRect(fx, top, fw, fh)
+      photoAt(img, fx + 12, top + 12, pw, ph)
+      // selotip di atas bingkai
+      ctx.save()
+      ctx.translate(W / 2 + (i - 1) * 40, top)
+      ctx.rotate(((i % 2 ? 5 : -5) * Math.PI) / 180)
+      ctx.fillStyle = '#fff'
+      ctx.fillRect(-36, -10, 72, 20)
+      ctx.lineWidth = 2
+      ctx.strokeRect(-36, -10, 72, 20)
+      ctx.beginPath()
+      for (let k = -28; k < 40; k += 9) {
+        ctx.moveTo(k, -10)
+        ctx.lineTo(k - 7, 10)
+      }
+      ctx.lineWidth = 1
+      ctx.stroke()
+      ctx.restore()
+      ctx.fillStyle = '#000'
+      // tulisan tangan di bawah foto
+      setFont(32, 400, HAND)
+      ctx.textAlign = 'center'
+      ctx.fillText(t.captions[i] || '', W / 2, top + 12 + ph + 36)
+      y = top + fh
+    })
+
+    y += 18
+    for (const label of ['To:', 'From:']) {
+      setFont(28, 400, HAND)
+      ctx.textAlign = 'left'
+      y += 28
+      ctx.fillText(label, PAD + 10, y)
+      const lx = PAD + 10 + ctx.measureText(label).width + 10
+      ctx.save()
+      ctx.lineWidth = 2
+      ctx.setLineDash([2, 5])
+      ctx.beginPath()
+      ctx.moveTo(lx, y + 3)
+      ctx.lineTo(W - PAD - 10, y + 3)
+      ctx.stroke()
+      ctx.restore()
+      y += 10
+    }
+    y += 12
+    t.footer.forEach((f, i) => center(f, { size: i ? 14 : 16, weight: 700, spacing: i ? 0 : 3, gap: 0.3 }))
+    y += 4
+    small(meta.no, `${meta.date} ${meta.time}`, 12)
+  } else if (t.layout === 'film') {
+    /* ---------- Roll film 35mm ---------- */
+    fitCenter(t.brand, { size: 34, gap: 0.15 })
+    center(t.stock, { size: 13, weight: 700, spacing: 2, gap: 0.3 })
+    small(meta.no, `${meta.date} ${meta.time}`, 12)
+    y += 10
+
+    const rail = 36
+    const x0 = PAD
+    const x1 = W - PAD
+    const pw = x1 - x0 - rail * 2 - 8
+    const ph = Math.round(pw / PRINT.photoAspect)
+    const filmTop = y
+    y += 14
+    images.forEach((img, i) => {
+      photoAt(img, x0 + rail + 4, y, pw, ph)
+      y += ph + 2
+      setFont(11, 700)
+      y += 13
+      ctx.textAlign = 'left'
+      ctx.fillText(`${i + 1}A >`, x0 + rail + 4, y)
+      ctx.textAlign = 'right'
+      ctx.fillText(t.edge, x1 - rail - 4, y)
+      y += 12
+    })
+    const filmBottom = y
+    ctx.lineWidth = 2
+    ctx.strokeRect(x0 + 1, filmTop, x1 - x0 - 2, filmBottom - filmTop)
+    ctx.beginPath()
+    ctx.moveTo(x0 + rail, filmTop)
+    ctx.lineTo(x0 + rail, filmBottom)
+    ctx.moveTo(x1 - rail, filmTop)
+    ctx.lineTo(x1 - rail, filmBottom)
+    ctx.stroke()
+    // lubang sprocket (garis saja, tanpa blok hitam)
+    for (let hy = filmTop + 10; hy + 14 <= filmBottom - 8; hy += 26) {
+      for (const hx of [x0 + rail / 2, x1 - rail / 2]) {
+        ctx.beginPath()
+        if (ctx.roundRect) ctx.roundRect(hx - 9, hy, 18, 14, 3)
+        else ctx.rect(hx - 9, hy, 18, 14)
+        ctx.stroke()
+      }
+    }
+    y += 16
+    center(t.footer[0], { size: 15, weight: 700, gap: 0.2 })
+    fitCenter(t.footer[1], { size: 44, weight: 400, family: HAND, gap: 0.1 })
+  } else if (t.layout === 'comic') {
+    /* ---------- Komik ---------- */
+    y += 2
+    fitCenter(t.title, { size: 54, gap: 0.05 })
+    setFont(22, 700)
+    const bw = ctx.measureText(t.banner).width + 40
+    y += 6
+    ctx.save()
+    ctx.translate(W / 2, y + 15)
+    ctx.rotate((-3 * Math.PI) / 180)
+    ctx.fillRect(-bw / 2, -15, bw, 30)
+    ctx.fillStyle = '#fff'
+    ctx.textAlign = 'center'
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '6px'
+    ctx.fillText(t.banner, 3, 8)
+    if ('letterSpacing' in ctx) ctx.letterSpacing = '0px'
+    ctx.restore()
+    ctx.fillStyle = '#000'
+    y += 36
+    small(`No. 26  ${t.issue}`, meta.date, 12, 700)
+    small(meta.no, meta.time, 12)
+    y += 4
+
+    const pw = W - PAD * 2 - 6
+    const ph = Math.round(pw / PRINT.photoAspect)
+    images.forEach((img, i) => {
+      y += 12
+      const top = y
+      const px = PAD + 3
+      photoAt(img, px, top, pw, ph)
+      ctx.lineWidth = 4
+      ctx.strokeRect(px - 2, top - 2, pw + 4, ph + 4)
+
+      // kotak narasi (kiri atas)
+      setFont(12, 700)
+      const cap = t.boxes[i] || ''
+      const cw = ctx.measureText(cap).width + 16
+      ctx.fillStyle = '#fff'
+      ctx.fillRect(px - 2, top - 2, cw, 26)
+      ctx.fillStyle = '#000'
+      ctx.lineWidth = 2
+      ctx.strokeRect(px - 2, top - 2, cw, 26)
+      ctx.textAlign = 'left'
+      ctx.fillText(cap, px + 6, top + 15)
+
+      // balon kata (kanan bawah)
+      setFont(26, 400, HAND)
+      const text = t.bubbles[i] || ''
+      const rx = ctx.measureText(text).width / 2 + 18
+      const ry = 23
+      const bx = px + pw - rx - 10
+      const by = top + ph - ry - 16
+      const bubble = new Path2D()
+      bubble.ellipse(bx, by, rx, ry, 0, 0, Math.PI * 2)
+      bubble.moveTo(bx - rx * 0.35, by + ry * 0.7)
+      bubble.lineTo(bx - rx * 0.7, by + ry + 14)
+      bubble.lineTo(bx - rx * 0.05, by + ry * 0.85)
+      bubble.closePath()
+      ctx.lineWidth = 5
+      ctx.stroke(bubble)
+      ctx.fillStyle = '#fff'
+      ctx.fill(bubble)
+      ctx.fillStyle = '#000'
+      ctx.textAlign = 'center'
+      ctx.fillText(text, bx, by + 8)
+      y = top + ph + 2
+    })
+    y += 22
+    fitCenter('THE END', { size: 42, gap: 0.15 })
+    t.footer.forEach((f) => center(f, { size: 14, weight: 700, gap: 0.2 }))
   } else {
     /* ---------- Kop ---------- */
     const title = EVENT.title.toUpperCase()

@@ -719,6 +719,190 @@ button.back {
   shape-rendering: crispEdges;
 }
 
+/* ---------- Template B: polaroid ---------- */
+.pl__title {
+  font-family: var(--font-hand);
+  font-size: 3.1em;
+  line-height: 1.05;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.pl__spaced {
+  letter-spacing: 0.3em;
+  margin-right: -0.3em;
+  font-size: 0.72em;
+  margin-top: 1.5cqw;
+}
+
+.pl__small {
+  font-size: 0.72em;
+}
+
+.pl__frame {
+  position: relative;
+  margin-top: 6cqw;
+  padding: 3cqw 3cqw 0;
+  border: 0.6cqw solid var(--ink-print);
+}
+
+.pl__tape {
+  position: absolute;
+  top: -3cqw;
+  left: 50%;
+  width: 19cqw;
+  height: 5.5cqw;
+  translate: -50% 0;
+  rotate: -5deg;
+  border: 0.5cqw solid var(--ink-print);
+  background: repeating-linear-gradient(115deg, #fff 0 1.8cqw, var(--ink-print) 1.8cqw 2.1cqw);
+}
+
+.pl__tape--1 { left: 60%; rotate: 5deg; }
+.pl__tape--2 { left: 70%; }
+
+.pl__cap {
+  font-family: var(--font-hand);
+  font-size: 1.6em;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.pl__line {
+  display: flex;
+  align-items: baseline;
+  gap: 2cqw;
+  margin-top: 3cqw;
+  font-family: var(--font-hand);
+  font-size: 1.4em;
+}
+
+.pl__blank {
+  flex: 1;
+  border-bottom: 0.6cqw dotted var(--ink-print);
+}
+
+.rc--polaroid .pl__line + .rc__strong {
+  margin-top: 3cqw;
+}
+
+/* ---------- Template C: roll film ---------- */
+.fm__brand {
+  font-weight: 700;
+  font-size: 1.95em;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.fm__small {
+  font-size: 0.68em;
+}
+
+.fm__strip {
+  --rail: 9.4cqw;
+  position: relative;
+  margin-top: 2.5cqw;
+  padding: 3.6cqw calc(var(--rail) + 1cqw) 0;
+  border: 0.6cqw solid var(--ink-print);
+  /* garis rel + lubang sprocket di kedua sisi */
+  background:
+    linear-gradient(var(--ink-print), var(--ink-print)) var(--rail) 0 / 0.6cqw 100% no-repeat,
+    linear-gradient(var(--ink-print), var(--ink-print)) calc(100% - var(--rail)) 0 / 0.6cqw 100% no-repeat,
+    radial-gradient(closest-side, transparent 72%, var(--ink-print) 76%, var(--ink-print) 96%, transparent 100%)
+      2.4cqw 2cqw / 4.8cqw 6.8cqw repeat-y,
+    radial-gradient(closest-side, transparent 72%, var(--ink-print) 76%, var(--ink-print) 96%, transparent 100%)
+      calc(100% - 2.4cqw) 2cqw / 4.8cqw 6.8cqw repeat-y;
+}
+
+.fm__edge {
+  font-size: 0.55em;
+  font-weight: 700;
+  margin: 0.6cqw 0 2.4cqw;
+}
+
+.fm__dev {
+  margin-top: 4cqw;
+}
+
+.fm__hand {
+  font-family: var(--font-hand);
+  font-size: 2.3em;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* ---------- Template D: komik ---------- */
+.cm__title {
+  font-weight: 700;
+  font-size: 2.65em;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.cm__banner {
+  width: fit-content;
+  margin: 1.5cqw auto 2cqw;
+  padding: 0.5cqw 4cqw;
+  rotate: -3deg;
+  background: var(--ink-print);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1em;
+  letter-spacing: 0.3em;
+}
+
+.cm__small {
+  font-size: 0.66em;
+}
+
+.cm__panel {
+  position: relative;
+  margin-top: 3.5cqw;
+}
+
+.cm__panel .rc__slot {
+  border-width: 1.1cqw;
+}
+
+.cm__box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 0.6cqw 2cqw;
+  border: 0.6cqw solid var(--ink-print);
+  background: #fff;
+  font-weight: 700;
+  font-size: 0.6em;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.cm__bubble {
+  position: absolute;
+  right: 3cqw;
+  bottom: 4cqw;
+  padding: 1cqw 3.5cqw;
+  border: 0.9cqw solid var(--ink-print);
+  border-radius: 50%;
+  background: #fff;
+  font-family: var(--font-hand);
+  font-size: 1.25em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.cm__end {
+  margin-top: 5cqw;
+  font-weight: 700;
+  font-size: 2.1em;
+  line-height: 1.1;
+  text-align: center;
+}
+
 /* ---------- Template E: boarding pass ---------- */
 .tk__airline {
   font-weight: 700;
