@@ -15,7 +15,8 @@ import PrintArea from '../components/PrintArea.jsx'
 import { buildRawbtUrl, getPrintMethod, sendToRawbt } from '../lib/rawbt.js'
 import {
   DEFAULT_PRINT_SETTINGS,
-  DITHER_PRESET,
+  LIGHT_PRESETS,
+  matchPreset,
   PRINT_LIMITS,
   PRINT_MODES,
   normalizePrintSettings,
@@ -466,6 +467,21 @@ function PrintTab({ onLoggedOut }) {
           </label>
         )}
 
+        <fieldset className="print-presets" disabled={!editable}>
+          <legend className="admin__label">Preset cahaya lokasi</legend>
+          {LIGHT_PRESETS.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              className={`print-preset${matchPreset(draft) === p.id ? ' is-active' : ''}`}
+              onClick={() => setDraft(normalizePrintSettings({ ...draft, ...p.values }))}
+            >
+              <strong>{p.label}</strong>
+              <span>{p.hint}</span>
+            </button>
+          ))}
+        </fieldset>
+
         <fieldset className="print-modes" disabled={!editable}>
           <legend className="admin__label">Mode foto</legend>
           {Object.entries(PRINT_MODES).map(([id, label]) => (
@@ -499,9 +515,6 @@ function PrintTab({ onLoggedOut }) {
         })}
 
         <div className="admin__row admin__row--wrap">
-          <button type="button" className="back" disabled={!editable} onClick={() => setDraft(normalizePrintSettings({ ...draft, ...DITHER_PRESET }))}>
-            Preset titik-titik
-          </button>
           <button type="button" className="back" disabled={!editable} onClick={() => setDraft({ ...DEFAULT_PRINT_SETTINGS })}>
             Kembali ke awal
           </button>

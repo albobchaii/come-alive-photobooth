@@ -33,8 +33,32 @@ export const PRINT_LIMITS = {
   feedMm: [0, 40, 1],
 }
 
-// Titik awal yang disarankan untuk mode titik-titik (hasil uji foto wajah).
-export const DITHER_PRESET = { mode: 'dither', brightness: 1.03, contrast: 1.15, gamma: 0.92 }
+// Preset sesuai cahaya di lokasi foto (semua memakai mode titik-titik).
+// Makin gelap ruangan, foto makin gelap → terang dinaikkan & gamma diturunkan
+// supaya wajah tetap kelihatan; kontras ikut naik supaya tidak kusam.
+export const LIGHT_PRESETS = [
+  {
+    id: 'terang',
+    label: 'Terang',
+    hint: 'Ruangan terang / siang / ada ring light',
+    values: { mode: 'dither', brightness: 1.03, contrast: 1.15, gamma: 0.92 },
+  },
+  {
+    id: 'redup',
+    label: 'Redup',
+    hint: 'Lampu ruangan biasa, agak remang',
+    values: { mode: 'dither', brightness: 1.12, contrast: 1.2, gamma: 0.8 },
+  },
+  {
+    id: 'gelap',
+    label: 'Gelap',
+    hint: 'Lampu panggung / malam / cahaya minim',
+    values: { mode: 'dither', brightness: 1.25, contrast: 1.3, gamma: 0.68 },
+  },
+]
+
+export const matchPreset = (s) =>
+  LIGHT_PRESETS.find((p) => Object.entries(p.values).every(([k, v]) => s[k] === v))?.id ?? null
 
 const clamp = (v, [min, max, step]) => {
   const n = Number(v)
