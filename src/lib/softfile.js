@@ -7,12 +7,15 @@
  *  3. Halaman cetak    → struk.jpg diunggah begitu struk selesai digambar
  *  4. Halaman QR       → "complete": server cek 4 file lalu tandai siap
  *
+ * Foto softfile diberi film grade Come Alive dulu (filmGrade.js); struk tidak.
+ *
  * Upload berjalan di latar belakang dan terus dicoba ulang (internet putus,
  * link kedaluwarsa, dsb.), juga setelah pengunjung menekan Selesai.
  * Foto ulang cukup mengunggah ulang file yang sama (menimpa).
  */
 import { getKiosk, kioskFetch } from './kiosk.js'
 import { getReceiptMeta, getSessionId, getTemplateId } from './session.js'
+import { gradeForSoftfile } from './filmGrade.js'
 
 export const SOFTFILE_FILES = ['foto-1.jpg', 'foto-2.jpg', 'foto-3.jpg', 'struk.jpg']
 
@@ -47,6 +50,7 @@ function engineFor(id) {
       done: new Set(),
       status: 'idle', // idle | uploading | ready | error
       completing: null,
+      grading: {}, // nama file → proses film grade yang belum selesai
       cancelled: false,
       listeners: new Set(),
     }
@@ -156,11 +160,18 @@ const toBlob = (dataUrl) => fetch(dataUrl).then((r) => r.blob())
 /* API untuk halaman                                                   */
 /* ------------------------------------------------------------------ */
 
-// Halaman kamera: tiap foto langsung diunggah.
+// Halaman kamera: tiap foto diberi film grade lalu diunggah.
 export async function uploadPhoto(index, dataUrl) {
   const e = current()
   if (!e || !dataUrl) return
-  queue(e, SOFTFILE_FILES[index], await toBlob(dataUrl))
+  const name = SOFTFILE_FILES[index]
+  const job = toBlob(dataUrl).then(gradeForSoftfile)
+  e.grading[name] = job
+  const blob = await job
+  // Foto diganti saat grade berjalan → hasil lama dibuang.
+  if (e.grading[name] !== job) return
+  delete e.grading[name]
+  queue(e, name, blob)
 }
 
 // Halaman cetak: gambar struk (JPEG).
@@ -180,10 +191,12 @@ export function completeSoftfile({ shots = [], receiptDataUrl = null } = {}) {
   if (e.completing) return e.completing
 
   e.completing = (async () => {
+    // Tunggu film grade yang masih berjalan, supaya yang terkirim versi ber-grade.
+    while (Object.keys(e.grading).length) await Promise.allSettled(Object.values(e.grading))
     // Isi file yang belum pernah diantrekan (mis. setelah refresh).
     for (const [i, shot] of shots.entries()) {
       const name = SOFTFILE_FILES[i]
-      if (shot && !e.blobs[name]) queue(e, name, await toBlob(shot))
+      if (shot && !e.blobs[name]) queue(e, name, await gradeForSoftfile(await toBlob(shot)))
     }
     if (receiptDataUrl && !e.blobs['struk.jpg']) queue(e, 'struk.jpg', await toBlob(receiptDataUrl))
 
