@@ -165,6 +165,9 @@ export async function uploadPhoto(index, dataUrl) {
   const e = current()
   if (!e || !dataUrl) return
   const name = SOFTFILE_FILES[index]
+  // Daftarkan sesi sekarang juga (jangan tunggu grade): kalau QR di-scan cepat,
+  // pengunjung dapat halaman "almost ready", bukan "not found".
+  register(e).catch(() => {})
   const job = toBlob(dataUrl).then(gradeForSoftfile)
   e.grading[name] = job
   const blob = await job
